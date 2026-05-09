@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PyLens</title>
+    <meta
+      name="description"
+      content="PyLens - trace and log observability for Python and agentic AI."
+    />
+    <style>
+      :root {
+        --bg: #ffffff;
+        --surface: #ffffff;
+        --text: #111111;
+        --muted: rgba(17, 17, 17, 0.5);
+        --line: rgba(17, 17, 17, 0.1);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        min-height: 100%;
+      }
+
+      body {
+        font-family: "Geist", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI",
+          sans-serif;
+        -webkit-font-smoothing: antialiased;
+        color: var(--text);
+        background: #ffffff;
+      }
+
+      main {
+        width: min(640px, 100%);
+        margin: 0 auto;
+        padding: clamp(30px, 6vw, 64px) 24px;
+      }
+
+      .eyebrow {
+        font-size: 11px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--muted);
+        margin-bottom: 18px;
+      }
+
+      h1 {
+        margin: 0;
+        font-size: clamp(30px, 7vw, 52px);
+        line-height: 1.08;
+        letter-spacing: -0.03em;
+        font-weight: 560;
+      }
+
+      .subtitle {
+        margin: 14px 0 30px;
+        color: var(--muted);
+        font-size: clamp(14px, 2.4vw, 16px);
+        line-height: 1.6;
+        max-width: 52ch;
+      }
+
+      .focus {
+        border-top: 1px solid var(--line);
+        border-bottom: 1px solid var(--line);
+        padding: 14px 0;
+        margin-bottom: 22px;
+      }
+
+      .focus p {
+        margin: 0;
+        font-size: 12px;
+        color: var(--muted);
+      }
+
+      .focus strong {
+        color: var(--text);
+        font-weight: 500;
+      }
+
+      .foot {
+        font-size: 12px;
+        color: var(--muted);
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <p class="eyebrow">pylens.org - coming soon</p>
+      <h1>Trace. Debug. Scale your AI workflows.</h1>
+      <p class="subtitle">
+        Observability for Python and agentic AI, built for trace-first debugging.
+      </p>
+
+      <section class="focus" aria-label="Platform focus">
+        <p>
+          <strong>Focus:</strong> tracing, logs, and agent execution visibility in one
+          clean workflow.
+        </p>
+      </section>
+
+      <footer class="foot">Early version for pylens.org</footer>
+    </main>
+  </body>
+</html>
