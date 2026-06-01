@@ -218,11 +218,12 @@ body[data-ghost="always"] .ghost{opacity:.8;}
 .linkrow .ic{color:var(--accent);}
 .linkrow .pth{color:var(--ink);}
 .linkrow .sp{color:var(--faint);}
-.chips{display:flex;gap:7px;flex-wrap:wrap;}
-.chip{font-family:var(--mono);font-size:11px;padding:3px 9px;border-radius:6px;}
-.chip.pri-high{background:#fce4e0;color:#b5432e;}
-.chip.pri-med{background:var(--tint2);color:var(--accent);}
-.chip.type{background:#e6eef3;color:var(--blue);}
+.chips{display:flex;gap:6px;flex-wrap:wrap;}
+.chip{font-family:var(--body);font-size:10.5px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;padding:3px 8px;border-radius:6px;display:inline-flex;align-items:center;gap:4px;}
+.chip.pri-high{background:#FBE6E0;color:#C0492F;}
+.chip.pri-med{background:#FCEFDD;color:#B5610C;}
+.chip.pri-low{background:#EBE7DE;color:#7C756A;}
+.chip.type{background:#E7EEF3;color:#2C6E9B;}
 .draft-foot{flex:none;border-top:1px solid var(--line);padding:14px 24px;display:flex;align-items:center;gap:12px;}
 .draft-foot .meta{font-size:12px;color:var(--muted);}
 .draft-foot .meta b{color:var(--green);}
@@ -234,33 +235,34 @@ body[data-ghost="always"] .ghost{opacity:.8;}
 
 /* ---------- Board (Jira-like) ---------- */
 #pane-board{flex-direction:column;overflow:hidden;}
-.board-bar{flex:none;padding:14px 24px;display:flex;align-items:center;gap:10px;}
-.board-bar .ttl{font-family:var(--disp);font-weight:600;font-size:15px;}
-.board-bar .av-grp{display:flex;margin-left:8px;}
+.board-bar{flex:none;padding:18px 26px 14px;display:flex;align-items:center;gap:10px;}
+.board-bar .ttl{font-family:var(--disp);font-weight:600;font-size:16px;letter-spacing:-.01em;}
+.board-bar .av-grp{display:flex;margin-left:10px;}
 .board-bar .av-grp span{width:26px;height:26px;border-radius:50%;border:2px solid var(--bg);margin-left:-7px;display:grid;place-items:center;color:#fff;font-size:11px;font-weight:600;font-family:var(--disp);}
 .board-bar .spacer{flex:1;}
 .board-bar .find{font-family:var(--body);font-size:12.5px;color:var(--faint);background:var(--panel);border:1px solid var(--line);padding:7px 13px;border-radius:8px;}
-.board{flex:1;min-height:0;overflow-x:auto;display:flex;gap:16px;padding:0 24px 24px;}
-.col{width:300px;flex:none;display:flex;flex-direction:column;min-height:0;}
-.col-h{display:flex;align-items:center;gap:8px;padding:8px 4px;font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);}
-.col-h .ct{background:var(--panel2);border-radius:20px;padding:1px 8px;color:var(--faint);}
+.board{flex:1;min-height:0;overflow-x:auto;display:flex;gap:14px;padding:0 26px 26px;}
+.col{width:296px;flex:none;display:flex;flex-direction:column;min-height:0;background:var(--panel2);border-radius:14px;padding:6px 8px 8px;}
+.col-h{display:flex;align-items:center;gap:9px;padding:11px 10px 9px;font-family:var(--body);font-size:12px;font-weight:600;letter-spacing:.02em;color:var(--muted);}
+.col-h .ct{margin-left:auto;font-family:var(--mono);font-size:10.5px;background:transparent;color:var(--faint);padding:0;}
 .col-h .dotc{width:8px;height:8px;border-radius:50%;}
-.col-list{flex:1;overflow:auto;display:flex;flex-direction:column;gap:10px;padding:4px 2px;}
-.tk{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 13px;cursor:pointer;transition:.13s;}
-.tk:hover{border-color:var(--line2);box-shadow:0 4px 14px rgba(0,0,0,.06);transform:translateY(-1px);}
+.col-list{flex:1;overflow:auto;display:flex;flex-direction:column;gap:9px;padding:2px;}
+.tk{position:relative;background:var(--panel);border:1px solid var(--line);border-radius:11px;padding:13px 14px 12px;cursor:pointer;transition:box-shadow .15s,transform .15s,border-color .15s;overflow:hidden;}
+.tk::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--type-color,var(--line2));}
+.tk:hover{border-color:var(--line2);box-shadow:0 6px 18px rgba(26,23,20,.08);transform:translateY(-2px);}
 .tk.new{animation:tknew .6s ease;}
 @keyframes tknew{0%{background:var(--tint);transform:scale(.97);}100%{background:var(--panel);transform:none;}}
-.tk .ttl{font-size:13.5px;line-height:1.4;font-weight:500;margin-bottom:10px;}
-.tk .tags{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;}
+.tk .ttl{font-size:14px;line-height:1.4;font-weight:500;margin-bottom:11px;letter-spacing:-.005em;}
+.tk .tags{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;align-items:center;}
 .tk .foot{display:flex;align-items:center;gap:10px;}
-.tk .key{font-family:var(--mono);font-size:11px;color:var(--faint);}
+.tk .key{font-family:var(--mono);font-size:11px;color:var(--faint);letter-spacing:.02em;}
 .tk .prov{display:flex;align-items:center;gap:9px;margin-left:auto;font-family:var(--mono);font-size:11px;color:var(--muted);}
 .tk .prov .lk{display:flex;align-items:center;gap:3px;}
 .tk .prov .lk.ok{color:var(--green);}
 .tk .prov .lk.warn{color:#c08a2e;}
-.tk .who{width:22px;height:22px;border-radius:50%;display:grid;place-items:center;color:#fff;font-size:10px;font-weight:600;font-family:var(--disp);}
-.tk .cover{height:4px;border-radius:3px;background:var(--panel2);margin-bottom:10px;overflow:hidden;}
-.tk .cover i{display:block;height:100%;background:var(--green);border-radius:3px;}
+.tk .who{width:24px;height:24px;border-radius:50%;display:grid;place-items:center;color:#fff;font-size:10px;font-weight:600;font-family:var(--disp);}
+.tk .cover{height:3px;border-radius:3px;background:var(--panel2);margin-bottom:11px;overflow:hidden;}
+.tk .cover i{display:block;height:100%;background:linear-gradient(90deg,#7da354,var(--green));border-radius:3px;}
 
 /* toast */
 #toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--ink);color:#fff;
@@ -274,14 +276,6 @@ body[data-ghost="always"] .ghost{opacity:.8;}
 #view-editor ::-webkit-scrollbar-thumb{background:rgba(255,255,255,.16);background-clip:padding-box;}
 
 </style>
-<template id="__bundler_thumbnail">
-<svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
-  <rect width="120" height="120" rx="20" fill="#1A1714"/>
-  <circle cx="60" cy="56" r="22" fill="none" stroke="#D97A14" stroke-width="6"/>
-  <circle cx="60" cy="56" r="9" fill="#D97A14"/>
-  <rect x="74" y="70" width="20" height="6" rx="3" transform="rotate(45 74 70)" fill="#D97A14"/>
-</svg>
-</template>
 </head>
 <body data-ghost="always">
 
@@ -339,19 +333,17 @@ body[data-ghost="always"] .ghost{opacity:.8;}
 <div class="view" id="view-workspace" data-screen-label="Workspace">
   <div class="ws-rail">
     <div class="logo"></div>
-    <div class="ic on" data-pane="intake" title="Intake">✎</div>
+    <div class="ic on" data-pane="intake" title="Conversational AI">✎</div>
     <div class="ic" data-pane="board" title="Board">▤</div>
-    <div class="ic" title="Graph">◎</div>
-    <div class="ic" title="Coverage">◷</div>
     <div class="me">PM</div>
   </div>
 
   <div class="ws-main">
     <div class="ws-head">
       <div class="proj">Rider App</div>
-      <span class="crumb">/ Provenance intake</span>
+      <span class="crumb">/ Conversational AI tickets</span>
       <div class="ws-tabs" id="wstabs">
-        <button data-pane="intake" class="on">✎ Intake</button>
+        <button data-pane="intake" class="on">✦ Conversational AI</button>
         <button data-pane="board">▤ Board</button>
       </div>
       <div class="spacer"></div>
@@ -363,8 +355,8 @@ body[data-ghost="always"] .ghost{opacity:.8;}
       <!-- conversation -->
       <div class="chat">
         <div class="chat-head">
-          <div class="t"><span class="bz">◎</span>PyLens Intake</div>
-          <div class="s">A guided conversation that turns intent into a fully-linked ticket — no blank-form staring.</div>
+          <div class="t"><span class="bz">✦</span>Conversational AI Tickets</div>
+          <div class="s">Describe intent in plain language — PyLens interviews you, links the right code from the graph, and drafts a complete ticket.</div>
         </div>
         <div class="chat-log" id="chatlog"></div>
         <div class="chat-input">
@@ -793,8 +785,8 @@ function renderDraft(flash=[]){
     set('d-links', DRAFT.links.map(([f,sp])=>`<div class="linkrow"><span class="ic">⦿</span><span class="pth">${escapeHtml(f)}</span><span class="sp">·</span><span>${escapeHtml(sp)}</span></div>`).join(''));
   } else set('d-links','—',true);
   if(DRAFT.priority || DRAFT.type){
-    const pc = DRAFT.priority==='High'?'pri-high':'pri-med';
-    set('d-attrs', `<div class="chips">${DRAFT.type?`<span class="chip type">${DRAFT.type}</span>`:''}${DRAFT.priority?`<span class="chip ${pc}">⚑ ${DRAFT.priority}</span>`:''}</div>`);
+    const pc = DRAFT.priority==='High'?'pri-high':DRAFT.priority==='Low'?'pri-low':'pri-med';
+    set('d-attrs', `<div class="chips">${DRAFT.type?`<span class="chip type">${DRAFT.type}</span>`:''}${DRAFT.priority?`<span class="chip ${pc}">${DRAFT.priority}</span>`:''}</div>`);
   } else set('d-attrs','—',true);
   // meta + button
   const n = DRAFT.links ? DRAFT.links.length : 0;
@@ -846,13 +838,15 @@ function renderBoard(){
     c.innerHTML = `<div class="col-h"><span class="dotc" style="background:${col.dot}"></span>${col.name}<span class="ct">${col.cards.length}</span></div>`;
     const list = document.createElement('div'); list.className='col-list';
     col.cards.forEach(card=>{
-      const pc = card.pri==='High'?'pri-high':card.pri==='Low'?'type':'pri-med';
+      const pc = card.pri==='High'?'pri-high':card.pri==='Low'?'pri-low':'pri-med';
+      const typeColors = { Story:'#2C6E9B', Bug:'#C0492F', Task:'#7A5EA6', Decision:'#5C7A3D' };
       const el = document.createElement('div');
       el.className='tk'+(card.isNew?' new':'');
+      el.style.setProperty('--type-color', typeColors[card.type] || 'var(--line2)');
       el.innerHTML = `
         <div class="ttl">${escapeHtml(card.ttl)}</div>
         ${card.cov!==undefined?`<div class="cover"><i style="width:${card.cov}%"></i></div>`:''}
-        <div class="tags"><span class="chip type">${card.type}</span><span class="chip ${pc}">⚑ ${card.pri}</span></div>
+        <div class="tags"><span class="chip type">${card.type}</span><span class="chip ${pc}">${card.pri}</span></div>
         <div class="foot">
           <span class="key">${card.key}</span>
           <span class="prov">${card.links.map(([k,t])=>`<span class="lk ${k}">${t}</span>`).join('')}</span>
