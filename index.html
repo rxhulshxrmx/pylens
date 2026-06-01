@@ -1,110 +1,877 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>PyLens</title>
-    <meta
-      name="description"
-      content="PyLens - trace and log observability for Python and agentic AI."
-    />
-    <style>
-      :root {
-        --bg: #ffffff;
-        --surface: #ffffff;
-        --text: #111111;
-        --muted: rgba(17, 17, 17, 0.5);
-        --line: rgba(17, 17, 17, 0.1);
-      }
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PyLens — Product Prototype</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ============ PyLens product prototype ============ */
+:root{
+  /* brand */
+  --accent:#D97A14; --accent-soft:#E8A44D;
+  /* workspace (light, warm) */
+  --bg:#FAF8F4; --panel:#FFFFFF; --panel2:#F3F0E9;
+  --ink:#1A1714; --muted:#6B655C; --faint:#938C81;
+  --tint:#FBE4CC; --tint2:#FCEFDD;
+  --line:#E4DFD5; --line2:#D8D2C6;
+  --green:#5C7A3D; --blue:#2C6E9B; --purple:#7A5EA6;
+  --disp:'Space Grotesk',sans-serif;
+  --body:'IBM Plex Sans',sans-serif;
+  --mono:'IBM Plex Mono',monospace;
+  /* editor (dark, VS Code-ish) */
+  --ed-bg:#1E1E1E; --ed-bg2:#252526; --ed-bg3:#2D2D2D;
+  --ed-line:#2A2A2A; --ed-border:#3C3C3C;
+  --ed-txt:#D4D4D4; --ed-ghost:#6E6E6E;
+  --c-key:#569CD6; --c-type:#4EC9B0; --c-str:#CE9178;
+  --c-fn:#DCDCAA; --c-var:#9CDCFE; --c-com:#6A9955;
+  --c-punc:#D4D4D4; --c-num:#B5CEA8; --c-add:#6A9955;
+}
+*{box-sizing:border-box;}
+html,body{margin:0;height:100%;}
+body{font-family:var(--body);background:var(--bg);color:var(--ink);
+  height:100vh;overflow:hidden;display:flex;flex-direction:column;}
 
-      * {
-        box-sizing: border-box;
-      }
+/* ---------- top shell ---------- */
+.shell{height:52px;flex:none;background:var(--panel);border-bottom:1px solid var(--line);
+  display:flex;align-items:center;gap:18px;padding:0 18px;z-index:50;}
+.brand{display:flex;align-items:center;gap:9px;font-family:var(--disp);font-weight:600;font-size:16px;letter-spacing:-.01em;}
+.brand .mk{width:22px;height:22px;border-radius:6px;background:var(--accent);position:relative;flex:none;}
+.brand .mk::after{content:'';position:absolute;inset:6px;border:2px solid #fff;border-radius:50%;}
+.brand .mk::before{content:'';position:absolute;left:10.5px;top:13px;width:8px;height:2px;background:#fff;transform:rotate(45deg);border-radius:2px;}
+.seg{display:flex;background:var(--panel2);border-radius:9px;padding:3px;gap:2px;}
+.seg button{font-family:var(--body);font-weight:500;font-size:13px;color:var(--muted);background:none;border:none;
+  padding:6px 14px;border-radius:7px;cursor:pointer;display:flex;align-items:center;gap:7px;transition:.15s;}
+.seg button .gl{font-size:13px;opacity:.7;}
+.seg button:hover{color:var(--ink);}
+.seg button.on{background:var(--panel);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.08);}
+.shell .spacer{flex:1;}
+.shell .status{font-family:var(--mono);font-size:11px;color:var(--faint);display:flex;align-items:center;gap:8px;}
+.shell .status .ok{color:var(--green);}
+.dotg{width:6px;height:6px;border-radius:50%;background:var(--green);display:inline-block;}
 
-      html,
-      body {
-        margin: 0;
-        min-height: 100%;
-      }
+/* ---------- view containers ---------- */
+.view{flex:1;min-height:0;display:none;}
+.view.on{display:flex;}
 
-      body {
-        font-family: "Geist", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI",
-          sans-serif;
-        -webkit-font-smoothing: antialiased;
-        color: var(--text);
-        background: #ffffff;
-      }
+/* =========================================================
+   EDITOR VIEW
+========================================================= */
+#view-editor{background:var(--ed-bg);color:var(--ed-txt);font-family:var(--mono);}
+.ed-rail{width:48px;flex:none;background:#333;display:flex;flex-direction:column;align-items:center;padding-top:12px;gap:18px;}
+.ed-rail .ic{width:24px;height:24px;color:#858585;font-size:18px;display:grid;place-items:center;cursor:pointer;border-left:2px solid transparent;}
+.ed-rail .ic.on{color:#fff;border-left-color:var(--accent);}
+.ed-side{width:230px;flex:none;background:#252526;border-right:1px solid #1a1a1a;font-size:12px;color:#bbb;padding:10px 0;overflow:auto;}
+.ed-side .h{padding:4px 16px;font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:#888;font-family:var(--body);font-weight:600;}
+.ed-side .f{padding:3px 16px 3px 28px;cursor:pointer;display:flex;align-items:center;gap:7px;}
+.ed-side .f:hover{background:#2a2d2e;}
+.ed-side .f.on{background:#37373d;color:#fff;}
+.ed-side .f .ext{color:#888;}
+.ed-side .f .badge{margin-left:auto;font-size:9px;color:var(--accent-soft);font-family:var(--mono);}
 
-      main {
-        width: min(640px, 100%);
-        margin: 0 auto;
-        padding: clamp(30px, 6vw, 64px) 24px;
-      }
+.ed-main{flex:1;min-width:0;display:flex;flex-direction:column;}
+.ed-tabs{height:36px;flex:none;background:#252526;display:flex;align-items:stretch;border-bottom:1px solid #1a1a1a;}
+.ed-tab{display:flex;align-items:center;gap:8px;padding:0 16px;font-size:12.5px;color:#969696;background:#2d2d2d;border-right:1px solid #1a1a1a;cursor:pointer;}
+.ed-tab.on{background:var(--ed-bg);color:#fff;border-top:1px solid var(--accent);}
+.ed-tab .dot{width:8px;height:8px;border-radius:50%;background:var(--accent-soft);}
 
-      .eyebrow {
-        font-size: 11px;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-        color: var(--muted);
-        margin-bottom: 18px;
-      }
+.ed-code{flex:1;min-height:0;overflow:auto;padding:10px 0 40px;position:relative;}
+.ln{display:flex;align-items:flex-start;min-height:21px;line-height:21px;font-size:13.5px;white-space:pre;position:relative;}
+.ln .gut{width:54px;flex:none;text-align:right;padding-right:18px;color:#5a5a5a;user-select:none;font-size:12.5px;}
+.ln .code{flex:1;padding-right:24px;}
+.ln.prov{cursor:default;}
+.ln.prov:hover{background:rgba(232,164,77,.07);}
+.ln.prov .bulb{position:absolute;left:34px;color:var(--accent-soft);font-size:11px;opacity:0;transition:.12s;}
+.ln.prov:hover .bulb{opacity:1;}
+.ghost{color:var(--ed-ghost);font-style:normal;opacity:0;transition:opacity .15s;padding-left:18px;font-size:12.5px;}
+.ghost .gi{color:#7a7a7a;}
+body[data-ghost="always"] .ghost{opacity:.8;}
+.ln.prov:hover .ghost{opacity:.95;}
+.ghost b{color:var(--accent-soft);font-weight:500;}
 
-      h1 {
-        margin: 0;
-        font-size: clamp(30px, 7vw, 52px);
-        line-height: 1.08;
-        letter-spacing: -0.03em;
-        font-weight: 560;
-      }
+/* token colors */
+.k{color:var(--c-key);} .ty{color:var(--c-type);} .s{color:var(--c-str);}
+.fn{color:var(--c-fn);} .v{color:var(--c-var);} .cm{color:var(--c-com);}
+.nm{color:var(--c-num);} .p{color:var(--c-punc);}
 
-      .subtitle {
-        margin: 14px 0 30px;
-        color: var(--muted);
-        font-size: clamp(14px, 2.4vw, 16px);
-        line-height: 1.6;
-        max-width: 52ch;
-      }
+.ed-status{height:24px;flex:none;background:var(--accent);color:#fff;display:flex;align-items:center;gap:16px;
+  padding:0 14px;font-family:var(--mono);font-size:11px;}
+.ed-status .grp{display:flex;align-items:center;gap:6px;}
+.ed-status .spacer{flex:1;}
 
-      .focus {
-        border-top: 1px solid var(--line);
-        border-bottom: 1px solid var(--line);
-        padding: 14px 0;
-        margin-bottom: 22px;
-      }
+/* ---------- provenance hover card ---------- */
+#prov-card{position:fixed;z-index:80;width:430px;background:var(--ed-bg2);border:1px solid var(--ed-border);
+  border-radius:8px;box-shadow:0 12px 40px rgba(0,0,0,.55);font-family:var(--body);color:#cfcfcf;
+  font-size:13px;opacity:0;pointer-events:none;transform:translateY(4px);transition:opacity .12s,transform .12s;}
+#prov-card.show{opacity:1;pointer-events:auto;transform:translateY(0);}
+#prov-card .pc-top{display:flex;align-items:center;gap:9px;padding:11px 14px 9px;border-bottom:1px solid var(--ed-border);}
+#prov-card .pc-top .av{width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,#c44,#a33);flex:none;
+  display:grid;place-items:center;color:#fff;font-size:11px;font-weight:600;font-family:var(--disp);}
+#prov-card .pc-top .who{font-weight:600;color:#fff;font-size:13px;}
+#prov-card .pc-top .when{color:#8a8a8a;font-size:11.5px;font-family:var(--mono);}
+#prov-card .pc-top .cov{margin-left:auto;font-family:var(--mono);font-size:10.5px;color:#8fbf6f;display:flex;align-items:center;gap:5px;}
+#prov-card .pc-body{padding:12px 14px;}
+#prov-card .req-tag{font-family:var(--mono);font-size:11px;color:var(--accent-soft);font-weight:600;}
+#prov-card .req-ttl{color:#fff;font-weight:600;font-size:14px;margin:3px 0 6px;font-family:var(--disp);}
+#prov-card .req-desc{color:#b6b6b6;font-size:12.5px;line-height:1.5;}
+#prov-card .chain{margin-top:13px;display:flex;flex-direction:column;gap:0;}
+#prov-card .step{display:flex;gap:11px;}
+#prov-card .step .rail{display:flex;flex-direction:column;align-items:center;width:16px;flex:none;}
+#prov-card .step .nd{width:11px;height:11px;border-radius:50%;border:2px solid var(--accent-soft);margin-top:3px;background:var(--ed-bg2);}
+#prov-card .step .nd.sq{border-radius:2px;border-color:#888;}
+#prov-card .step .nd.dia{transform:rotate(45deg);border-color:#8fbf6f;border-radius:1px;}
+#prov-card .step .bar{flex:1;width:2px;background:var(--ed-border);margin:2px 0;}
+#prov-card .step .ct{padding-bottom:12px;min-width:0;}
+#prov-card .step .lbl{font-family:var(--mono);font-size:11px;color:#9a9a9a;display:flex;align-items:center;gap:7px;}
+#prov-card .step .lbl b{color:#cfcfcf;font-weight:600;}
+#prov-card .step .snip{margin-top:4px;color:#c7a98a;font-size:12px;line-height:1.45;font-style:italic;}
+#prov-card .step .meta{margin-top:3px;font-family:var(--mono);font-size:11.5px;color:#c9c9c9;}
+#prov-card .pc-acts{display:flex;align-items:center;gap:2px;padding:9px 10px;border-top:1px solid var(--ed-border);flex-wrap:wrap;}
+#prov-card .pc-acts button{background:none;border:none;color:#7fb3e0;font-family:var(--body);font-size:12.5px;cursor:pointer;
+  padding:5px 8px;border-radius:5px;display:flex;align-items:center;gap:6px;}
+#prov-card .pc-acts button:hover{background:#2f3a44;}
+#prov-card .pc-acts .sep{color:#555;}
+#prov-card .pc-acts .explain{color:var(--accent-soft);}
 
-      .focus p {
-        margin: 0;
-        font-size: 12px;
-        color: var(--muted);
-      }
+/* =========================================================
+   WORKSPACE VIEW (Jira-like, light)
+========================================================= */
+#view-workspace{flex-direction:row;}
+.ws-rail{width:56px;flex:none;background:#2A2622;display:flex;flex-direction:column;align-items:center;padding-top:14px;gap:14px;}
+.ws-rail .logo{width:32px;height:32px;border-radius:9px;background:var(--accent);position:relative;}
+.ws-rail .logo::after{content:'';position:absolute;inset:8px;border:2px solid #fff;border-radius:50%;}
+.ws-rail .ic{width:38px;height:38px;border-radius:9px;display:grid;place-items:center;color:#9a9189;font-size:17px;cursor:pointer;}
+.ws-rail .ic.on{background:rgba(217,122,20,.18);color:var(--accent-soft);}
+.ws-rail .ic:hover{color:#e6dccf;}
+.ws-rail .me{margin-top:auto;margin-bottom:14px;width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#5b8fb0,#3c6e8f);color:#fff;display:grid;place-items:center;font-weight:600;font-size:13px;font-family:var(--disp);}
 
-      .focus strong {
-        color: var(--text);
-        font-weight: 500;
-      }
+.ws-main{flex:1;min-width:0;display:flex;flex-direction:column;}
+.ws-head{height:56px;flex:none;display:flex;align-items:center;gap:14px;padding:0 24px;border-bottom:1px solid var(--line);background:var(--panel);}
+.ws-head .proj{font-family:var(--disp);font-weight:600;font-size:16px;}
+.ws-head .crumb{color:var(--faint);font-size:13px;}
+.ws-tabs{display:flex;gap:4px;margin-left:14px;}
+.ws-tabs button{font-family:var(--body);font-size:13px;font-weight:500;color:var(--muted);background:none;border:none;
+  padding:7px 14px;border-radius:8px;cursor:pointer;display:flex;align-items:center;gap:7px;}
+.ws-tabs button.on{background:var(--tint2);color:var(--accent);}
+.ws-tabs button:hover:not(.on){background:var(--panel2);color:var(--ink);}
+.ws-head .spacer{flex:1;}
+.ws-head .ghbtn{font-family:var(--body);font-size:12.5px;color:var(--muted);background:var(--panel2);border:1px solid var(--line);
+  padding:6px 12px;border-radius:8px;cursor:pointer;}
 
-      .foot {
-        font-size: 12px;
-        color: var(--muted);
-      }
-    </style>
-  </head>
-  <body>
-    <main>
-      <p class="eyebrow">pylens.org - coming soon</p>
-      <h1>Trace. Debug. Scale your AI workflows.</h1>
-      <p class="subtitle">
-        Observability for Python and agentic AI, built for trace-first debugging.
-      </p>
+.ws-pane{flex:1;min-height:0;display:none;}
+.ws-pane.on{display:flex;}
 
-      <section class="focus" aria-label="Platform focus">
-        <p>
-          <strong>Focus:</strong> tracing, logs, and agent execution visibility in one
-          clean workflow.
-        </p>
-      </section>
+/* ---------- Intake (conversation → ticket) ---------- */
+#pane-intake{flex-direction:row;}
+.chat{flex:1.1;min-width:0;display:flex;flex-direction:column;border-right:1px solid var(--line);}
+.chat-head{flex:none;padding:16px 24px 12px;border-bottom:1px solid var(--line);}
+.chat-head .t{font-family:var(--disp);font-weight:600;font-size:16px;display:flex;align-items:center;gap:9px;}
+.chat-head .t .bz{width:22px;height:22px;border-radius:7px;background:var(--tint);color:var(--accent);display:grid;place-items:center;font-size:13px;}
+.chat-head .s{font-size:12.5px;color:var(--muted);margin-top:4px;}
+.chat-log{flex:1;min-height:0;overflow:auto;padding:22px 24px;display:flex;flex-direction:column;gap:16px;}
+.msg{display:flex;gap:11px;max-width:84%;animation:rise .25s ease;}
+@keyframes rise{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}
+.msg .ava{width:30px;height:30px;border-radius:8px;flex:none;display:grid;place-items:center;font-size:13px;font-weight:600;font-family:var(--disp);}
+.msg.bot .ava{background:var(--tint);color:var(--accent);}
+.msg.me{align-self:flex-end;flex-direction:row-reverse;}
+.msg.me .ava{background:linear-gradient(135deg,#5b8fb0,#3c6e8f);color:#fff;border-radius:50%;}
+.bub{padding:11px 14px;border-radius:13px;font-size:13.5px;line-height:1.5;}
+.msg.bot .bub{background:var(--panel);border:1px solid var(--line);border-top-left-radius:4px;}
+.msg.me .bub{background:var(--accent);color:#fff;border-top-right-radius:4px;}
+.bub .tiny{font-size:11.5px;color:var(--faint);margin-top:6px;font-family:var(--mono);}
+.bub.bot-rich .pill{display:inline-flex;align-items:center;gap:5px;background:var(--tint2);color:var(--accent);
+  font-family:var(--mono);font-size:11px;padding:2px 7px;border-radius:5px;margin:2px 4px 2px 0;}
+.typing{display:flex;gap:4px;padding:13px 14px;}
+.typing span{width:6px;height:6px;border-radius:50%;background:var(--faint);animation:blink 1.2s infinite;}
+.typing span:nth-child(2){animation-delay:.2s;}.typing span:nth-child(3){animation-delay:.4s;}
+@keyframes blink{0%,60%,100%{opacity:.3;}30%{opacity:1;}}
 
-      <footer class="foot">Early version for pylens.org</footer>
-    </main>
-  </body>
+.chat-input{flex:none;border-top:1px solid var(--line);padding:12px 24px 16px;background:var(--panel);}
+.quick{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:11px;}
+.quick button{font-family:var(--body);font-size:12.5px;color:var(--ink);background:var(--bg);border:1px solid var(--line2);
+  padding:7px 13px;border-radius:18px;cursor:pointer;transition:.13s;}
+.quick button:hover{border-color:var(--accent);background:var(--tint2);color:var(--accent);}
+.composer{display:flex;align-items:center;gap:10px;background:var(--bg);border:1px solid var(--line2);border-radius:11px;padding:6px 6px 6px 14px;}
+.composer input{flex:1;border:none;background:none;outline:none;font-family:var(--body);font-size:13.5px;color:var(--ink);}
+.composer input::placeholder{color:var(--faint);}
+.composer .send{width:34px;height:34px;border-radius:8px;border:none;background:var(--accent);color:#fff;font-size:15px;cursor:pointer;flex:none;}
+.composer .send:disabled{background:var(--line2);cursor:default;}
+
+/* ticket draft */
+.draft{flex:1;min-width:0;display:flex;flex-direction:column;background:var(--bg);}
+.draft-head{flex:none;padding:16px 24px 12px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px;}
+.draft-head .lab{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);}
+.draft-head .key{font-family:var(--mono);font-size:12px;color:var(--accent);font-weight:600;margin-left:auto;}
+.draft-body{flex:1;min-height:0;overflow:auto;padding:20px 24px;}
+.df{margin-bottom:18px;}
+.df .fl{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--faint);margin-bottom:6px;}
+.df .fv{font-size:14px;line-height:1.55;color:var(--ink);}
+.df .fv.empty{color:#bdb6aa;font-style:italic;}
+.df .fv.title{font-family:var(--disp);font-weight:600;font-size:18px;}
+.fill{animation:fillpop .5s ease;}
+@keyframes fillpop{0%{background:var(--tint);}100%{background:transparent;}}
+.ac{display:flex;gap:9px;align-items:flex-start;margin-bottom:8px;font-size:13.5px;line-height:1.45;}
+.ac .ck{width:16px;height:16px;border-radius:4px;border:1.5px solid var(--green);flex:none;margin-top:2px;color:var(--green);display:grid;place-items:center;font-size:10px;}
+.linkrow{display:flex;align-items:center;gap:8px;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:8px 11px;margin-bottom:7px;font-family:var(--mono);font-size:12px;}
+.linkrow .ic{color:var(--accent);}
+.linkrow .pth{color:var(--ink);}
+.linkrow .sp{color:var(--faint);}
+.chips{display:flex;gap:7px;flex-wrap:wrap;}
+.chip{font-family:var(--mono);font-size:11px;padding:3px 9px;border-radius:6px;}
+.chip.pri-high{background:#fce4e0;color:#b5432e;}
+.chip.pri-med{background:var(--tint2);color:var(--accent);}
+.chip.type{background:#e6eef3;color:var(--blue);}
+.draft-foot{flex:none;border-top:1px solid var(--line);padding:14px 24px;display:flex;align-items:center;gap:12px;}
+.draft-foot .meta{font-size:12px;color:var(--muted);}
+.draft-foot .meta b{color:var(--green);}
+.draft-foot .spacer{flex:1;}
+.btn-primary{font-family:var(--body);font-weight:600;font-size:13.5px;background:var(--accent);color:#fff;border:none;
+  padding:10px 18px;border-radius:9px;cursor:pointer;display:flex;align-items:center;gap:8px;}
+.btn-primary:disabled{background:var(--line2);color:#fff;cursor:default;}
+.btn-ghost{font-family:var(--body);font-size:13px;color:var(--muted);background:none;border:1px solid var(--line);padding:9px 15px;border-radius:9px;cursor:pointer;}
+
+/* ---------- Board (Jira-like) ---------- */
+#pane-board{flex-direction:column;overflow:hidden;}
+.board-bar{flex:none;padding:14px 24px;display:flex;align-items:center;gap:10px;}
+.board-bar .ttl{font-family:var(--disp);font-weight:600;font-size:15px;}
+.board-bar .av-grp{display:flex;margin-left:8px;}
+.board-bar .av-grp span{width:26px;height:26px;border-radius:50%;border:2px solid var(--bg);margin-left:-7px;display:grid;place-items:center;color:#fff;font-size:11px;font-weight:600;font-family:var(--disp);}
+.board-bar .spacer{flex:1;}
+.board-bar .find{font-family:var(--body);font-size:12.5px;color:var(--faint);background:var(--panel);border:1px solid var(--line);padding:7px 13px;border-radius:8px;}
+.board{flex:1;min-height:0;overflow-x:auto;display:flex;gap:16px;padding:0 24px 24px;}
+.col{width:300px;flex:none;display:flex;flex-direction:column;min-height:0;}
+.col-h{display:flex;align-items:center;gap:8px;padding:8px 4px;font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);}
+.col-h .ct{background:var(--panel2);border-radius:20px;padding:1px 8px;color:var(--faint);}
+.col-h .dotc{width:8px;height:8px;border-radius:50%;}
+.col-list{flex:1;overflow:auto;display:flex;flex-direction:column;gap:10px;padding:4px 2px;}
+.tk{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 13px;cursor:pointer;transition:.13s;}
+.tk:hover{border-color:var(--line2);box-shadow:0 4px 14px rgba(0,0,0,.06);transform:translateY(-1px);}
+.tk.new{animation:tknew .6s ease;}
+@keyframes tknew{0%{background:var(--tint);transform:scale(.97);}100%{background:var(--panel);transform:none;}}
+.tk .ttl{font-size:13.5px;line-height:1.4;font-weight:500;margin-bottom:10px;}
+.tk .tags{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;}
+.tk .foot{display:flex;align-items:center;gap:10px;}
+.tk .key{font-family:var(--mono);font-size:11px;color:var(--faint);}
+.tk .prov{display:flex;align-items:center;gap:9px;margin-left:auto;font-family:var(--mono);font-size:11px;color:var(--muted);}
+.tk .prov .lk{display:flex;align-items:center;gap:3px;}
+.tk .prov .lk.ok{color:var(--green);}
+.tk .prov .lk.warn{color:#c08a2e;}
+.tk .who{width:22px;height:22px;border-radius:50%;display:grid;place-items:center;color:#fff;font-size:10px;font-weight:600;font-family:var(--disp);}
+.tk .cover{height:4px;border-radius:3px;background:var(--panel2);margin-bottom:10px;overflow:hidden;}
+.tk .cover i{display:block;height:100%;background:var(--green);border-radius:3px;}
+
+/* toast */
+#toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--ink);color:#fff;
+  font-family:var(--body);font-size:13px;padding:11px 18px;border-radius:10px;box-shadow:0 8px 30px rgba(0,0,0,.3);
+  opacity:0;transition:.25s;z-index:90;display:flex;align-items:center;gap:10px;}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+#toast .dotg{background:var(--accent-soft);}
+
+::-webkit-scrollbar{width:11px;height:11px;}
+::-webkit-scrollbar-thumb{background:rgba(120,110,95,.35);border-radius:6px;border:3px solid transparent;background-clip:padding-box;}
+#view-editor ::-webkit-scrollbar-thumb{background:rgba(255,255,255,.16);background-clip:padding-box;}
+
+</style>
+<template id="__bundler_thumbnail">
+<svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+  <rect width="120" height="120" rx="20" fill="#1A1714"/>
+  <circle cx="60" cy="56" r="22" fill="none" stroke="#D97A14" stroke-width="6"/>
+  <circle cx="60" cy="56" r="9" fill="#D97A14"/>
+  <rect x="74" y="70" width="20" height="6" rx="3" transform="rotate(45 74 70)" fill="#D97A14"/>
+</svg>
+</template>
+</head>
+<body data-ghost="always">
+
+<!-- ============ TOP SHELL ============ -->
+<div class="shell">
+  <div class="brand"><span class="mk"></span>PyLens</div>
+  <div class="seg" id="viewseg">
+    <button data-view="editor" class="on"><span class="gl">&lt;/&gt;</span>VS Code Extension</button>
+    <button data-view="workspace"><span class="gl">▦</span>Workspace</button>
+  </div>
+  <div class="spacer"></div>
+  <div class="status"><span class="dotg"></span><span class="ok">graph synced</span> · 1,284 spans linked · 91% coverage</div>
+</div>
+
+<!-- ============ EDITOR VIEW ============ -->
+<div class="view on" id="view-editor" data-screen-label="VS Code Extension">
+  <div class="ed-rail">
+    <div class="ic on">▦</div>
+    <div class="ic">⌕</div>
+    <div class="ic">⎇</div>
+    <div class="ic" title="PyLens">◎</div>
+  </div>
+  <div class="ed-side">
+    <div class="h">Explorer · rider-app</div>
+    <div class="f"><span class="ext">▸</span> app</div>
+    <div class="f on" style="padding-left:42px"><span class="ext">◆</span> RoleContext.tsx <span class="badge">5 ⦿</span></div>
+    <div class="f" style="padding-left:42px"><span class="ext">◆</span> useCart.ts <span class="badge">3 ⦿</span></div>
+    <div class="f" style="padding-left:42px"><span class="ext">◆</span> SwitchModeButton.tsx</div>
+    <div class="f"><span class="ext">▸</span> components</div>
+    <div class="f"><span class="ext">▸</span> lib</div>
+    <div class="f" style="margin-top:8px"><span class="ext">▸</span> .pylens <span class="badge">graph.db</span></div>
+  </div>
+  <div class="ed-main">
+    <div class="ed-tabs">
+      <div class="ed-tab on"><span class="dot"></span>RoleContext.tsx</div>
+      <div class="ed-tab" style="background:#2d2d2d;color:#969696">useCart.ts</div>
+    </div>
+    <div class="ed-code" id="ed-code"><!-- lines injected by JS --></div>
+    <div class="ed-status">
+      <span class="grp">◎ PyLens</span>
+      <span class="grp">⎇ main</span>
+      <span class="grp">⦿ 5 linked spans</span>
+      <span class="spacer"></span>
+      <span class="grp">TypeScript React</span>
+      <span class="grp">Ln 9, Col 24</span>
+      <span class="grp">UTF-8</span>
+    </div>
+  </div>
+</div>
+
+<!-- floating provenance hover card -->
+<div id="prov-card"></div>
+
+<!-- ============ WORKSPACE VIEW ============ -->
+<div class="view" id="view-workspace" data-screen-label="Workspace">
+  <div class="ws-rail">
+    <div class="logo"></div>
+    <div class="ic on" data-pane="intake" title="Intake">✎</div>
+    <div class="ic" data-pane="board" title="Board">▤</div>
+    <div class="ic" title="Graph">◎</div>
+    <div class="ic" title="Coverage">◷</div>
+    <div class="me">PM</div>
+  </div>
+
+  <div class="ws-main">
+    <div class="ws-head">
+      <div class="proj">Rider App</div>
+      <span class="crumb">/ Provenance intake</span>
+      <div class="ws-tabs" id="wstabs">
+        <button data-pane="intake" class="on">✎ Intake</button>
+        <button data-pane="board">▤ Board</button>
+      </div>
+      <div class="spacer"></div>
+      <button class="ghbtn">⎇ Connected to GitHub</button>
+    </div>
+
+    <!-- INTAKE PANE -->
+    <div class="ws-pane on" id="pane-intake">
+      <!-- conversation -->
+      <div class="chat">
+        <div class="chat-head">
+          <div class="t"><span class="bz">◎</span>PyLens Intake</div>
+          <div class="s">A guided conversation that turns intent into a fully-linked ticket — no blank-form staring.</div>
+        </div>
+        <div class="chat-log" id="chatlog"></div>
+        <div class="chat-input">
+          <div class="quick" id="quick"></div>
+          <div class="composer">
+            <input id="composer" placeholder="Reply to PyLens…" autocomplete="off">
+            <button class="send" id="send">↑</button>
+          </div>
+        </div>
+      </div>
+      <!-- live ticket draft -->
+      <div class="draft">
+        <div class="draft-head">
+          <span class="lab">Drafting ticket</span>
+          <span class="key" id="draftkey">RIDER-205 · new</span>
+        </div>
+        <div class="draft-body" id="draftbody">
+          <div class="df"><div class="fl">Summary</div><div class="fv title empty" id="d-title">Waiting for the conversation to begin…</div></div>
+          <div class="df"><div class="fl">Context / why now</div><div class="fv empty" id="d-context">—</div></div>
+          <div class="df"><div class="fl">Acceptance criteria</div><div class="fv empty" id="d-ac">—</div></div>
+          <div class="df"><div class="fl">Linked code <span style="color:var(--accent)">(from graph)</span></div><div class="fv empty" id="d-links">—</div></div>
+          <div class="df"><div class="fl">Attributes</div><div class="fv empty" id="d-attrs">—</div></div>
+        </div>
+        <div class="draft-foot">
+          <span class="meta" id="draftmeta">PyLens will link <b>0 code spans</b> on creation</span>
+          <span class="spacer"></span>
+          <button class="btn-ghost" id="resetbtn">Restart</button>
+          <button class="btn-primary" id="createbtn" disabled>Create &amp; link ticket</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- BOARD PANE -->
+    <div class="ws-pane" id="pane-board">
+      <div class="board-bar">
+        <span class="ttl">Sprint 24 · Rider App</span>
+        <div class="av-grp">
+          <span style="background:#c0573f">MC</span>
+          <span style="background:#3c6e8f">PM</span>
+          <span style="background:#5c7a3d">AL</span>
+        </div>
+        <span class="spacer"></span>
+        <span class="find">⌕ Filter by provenance…</span>
+      </div>
+      <div class="board" id="board"></div>
+    </div>
+  </div>
+</div>
+
+<div id="toast"><span class="dotg"></span><span id="toast-txt"></span></div>
+
+<script>
+/* ============ PyLens prototype data ============ */
+
+/* --- Editor: source lines. tokens = array of [class,text]; prov = key into PROV --- */
+const CODE = [
+  { t:[['cm','// context/RoleContext.tsx']] },
+  { t:[['s',"'use client'"]] },
+  { t:[['k','import'],['p',' { '],['v','createContext'],['p',', '],['v','useContext'],['p',', '],['v','useState'],['p',' } '],['k','from'],['s'," 'react'"]] },
+  { t:[] },
+  { t:[['k','export type'],['ty',' Role'],['p',' = '],['s',"'rider'"],['p',' | '],['s',"'driver'"],['p',' | '],['s',"'merchant'"]], prov:'role' },
+  { t:[] },
+  { t:[['k','interface'],['ty',' RoleContextValue'],['p',' {']] },
+  { t:[['v','  role'],['p',': '],['ty','Role']], prov:'rolefield' },
+  { t:[['v','  setRole'],['p',': ('],['v','role'],['p',': '],['ty','Role'],['p',') => '],['ty','void']], prov:'setrole' },
+  { t:[['p','}']] },
+  { t:[] },
+  { t:[['k','const'],['v',' RoleContext'],['p',' = '],['fn','createContext'],['p','<'],['ty','RoleContextValue'],['p',' | '],['k','null'],['p','>('],['k','null'],['p',')']] },
+  { t:[] },
+  { t:[['k','export function'],['fn',' RoleProvider'],['p','({ '],['v','children'],['p',' }) {']] },
+  { t:[['k','  const'],['p',' ['],['v','role'],['p',', '],['v','setRole'],['p','] = '],['fn','useState'],['p','<'],['ty','Role'],['p','>('],['s',"'rider'"],['p',')']], prov:'default' },
+  { t:[['k','  return'],['p',' ('] ] },
+  { t:[['p','    <'],['ty','RoleContext.Provider'],['v',' value'],['p','={{ role, setRole }}>']] },
+  { t:[['p','      {'],['v','children'],['p','}']] },
+  { t:[['p','    </'],['ty','RoleContext.Provider'],['p','>']] },
+  { t:[['p','  )']] },
+  { t:[['p','}']] },
+  { t:[] },
+  { t:[['k','export function'],['fn',' useRole'],['p','() {']] },
+  { t:[['k','  const'],['v',' ctx'],['p',' = '],['fn','useContext'],['p','('],['v','RoleContext'],['p',')']] },
+  { t:[['k','  if'],['p',' (!'],['v','ctx'],['p',') '],['k','throw new'],['ty',' Error'],['p','('],['s',"'useRole outside RoleProvider'"],['p',')']], prov:'guard' },
+  { t:[['k','  return'],['v',' ctx']] },
+  { t:[['p','}']] },
+];
+
+/* --- Provenance hover cards. ghost = end-of-line ghost text (4-5 words) --- */
+const PROV = {
+  role:{
+    ghost:'RIDER-204 · multi-role support',
+    who:'Maya Chen', init:'MC', when:'last month · Apr 22, 2026',
+    cov:'linked',
+    tag:'RIDER-204', ttl:'Support driver & merchant roles',
+    desc:'Riders who also deliver should switch modes without a second account. Adds two members to the Role union.',
+    conv:{ tool:'Cursor · 14 turns', snip:'“extend the Role type with driver and merchant, keep rider as the default for new sign-ups”' },
+    commit:{ sha:'6150a56', msg:'feat(roles): add merchant role + provider guard', when:'Apr 22, 2026' },
+    ticket:'RIDER-204'
+  },
+  setrole:{
+    ghost:'AI-generated · revert chore',
+    who:'Maya Chen', init:'MC', when:'last month · Apr 22, 2026',
+    cov:'linked',
+    tag:'RIDER-204', ttl:'Support driver & merchant roles',
+    desc:'The setter was re-added after a cleanup commit accidentally removed the whole context.',
+    conv:{ tool:'ChatGPT · 6 turns', snip:'“restore the setRole signature that the revert wiped — it must accept a Role and return void”' },
+    commit:{ sha:'8edf2d9', msg:'revert: restore RoleContext after chore cleanup', when:'Apr 22, 2026' },
+    ticket:'RIDER-204'
+  },
+  rolefield:{
+    ghost:'requirement · RIDER-204',
+    who:'Maya Chen', init:'MC', when:'last month · Apr 22, 2026',
+    cov:'linked',
+    tag:'RIDER-204', ttl:'Support driver & merchant roles',
+    desc:'The active role each session reads from. Drives which navigation and earnings views render.',
+    conv:{ tool:'Cursor · 14 turns', snip:'“the context should expose the current role and a setter, nothing else”' },
+    commit:{ sha:'6150a56', msg:'feat(roles): add merchant role + provider guard', when:'Apr 22, 2026' },
+    ticket:'RIDER-204'
+  },
+  default:{
+    ghost:'decision DEC-12 · default = rider',
+    who:'Arjun Lall', init:'AL', when:'2 months ago · Mar 30, 2026',
+    cov:'decision',
+    tag:'DEC-12', ttl:'New users default to rider, not driver',
+    desc:'Product decided onboarding should optimise for the larger rider funnel; driver mode is opt-in later.',
+    conv:{ tool:'Linear thread · 9 comments', snip:'“default everyone to rider so the first run is the simplest path — drivers self-select afterwards”' },
+    commit:{ sha:'a07f1c2', msg:'chore(onboarding): set rider as initial role', when:'Mar 30, 2026' },
+    ticket:'DEC-12'
+  },
+  guard:{
+    ghost:'guardrail · incident INC-7',
+    who:'Maya Chen', init:'MC', when:'3 weeks ago · May 9, 2026',
+    cov:'linked',
+    tag:'INC-7', ttl:'Crash when role used outside provider',
+    desc:'A null context threw deep in render with no clue why. This explicit guard makes the misuse obvious.',
+    conv:{ tool:'Claude · 4 turns', snip:'“throw a clear error if useRole is called without a RoleProvider above it in the tree”' },
+    commit:{ sha:'c93de41', msg:'fix(roles): guard useRole against missing provider', when:'May 9, 2026' },
+    ticket:'INC-7'
+  },
+};
+
+/* --- Intake conversation script. Each step: bot message + quick replies. --- */
+/* apply() mutates DRAFT and returns the changed field ids to flash. --- */
+const SCRIPT = [
+  {
+    bot:'Hey — let’s turn an idea into a linked ticket. In a sentence, what do you want to build or fix?',
+    quick:['Let riders switch into driver mode','Fix the role-context crash','Add merchant payouts'],
+    apply(ans){
+      DRAFT.title = ans;
+      DRAFT.type = /fix|crash|bug/i.test(ans) ? 'Bug' : 'Story';
+      return ['d-title'];
+    }
+  },
+  {
+    bot:'Got it. Who feels this pain, and why now?',
+    quick:['Power users who ride AND drive','Support is fielding daily complaints','It blocks the payouts launch'],
+    apply(ans){ DRAFT.context = ans; return ['d-context']; }
+  },
+  {
+    bot:'I searched the provenance graph for related code. These look relevant — want me to link them?',
+    rich:true,
+    pills:['RoleContext.tsx','useRole()','SwitchModeButton.tsx'],
+    quick:['Yes, link all three','Just RoleContext.tsx','You decide from the graph'],
+    apply(ans){
+      DRAFT.links = ans.includes('Just')
+        ? [['RoleContext.tsx','Role']]
+        : [['RoleContext.tsx','Role · setRole'],['hooks/useRole.ts','useRole()'],['SwitchModeButton.tsx','onPress']];
+      return ['d-links'];
+    }
+  },
+  {
+    bot:'From that intent and code, here’s the acceptance criteria I drafted. Edit, or accept?',
+    quick:['Accept criteria','Add: keep cart on switch','Add: log the switch event'],
+    apply(ans){
+      DRAFT.ac = [
+        'A rider can switch to driver mode in ≤2 taps',
+        'Active role persists across reloads',
+        'Earnings view renders only in driver mode'
+      ];
+      if(/cart/i.test(ans)) DRAFT.ac.push('Cart contents survive a mode switch');
+      if(/log/i.test(ans))  DRAFT.ac.push('Each switch emits a role_changed analytics event');
+      return ['d-ac'];
+    }
+  },
+  {
+    bot:'Almost there. How urgent is this?',
+    quick:['High — this sprint','Medium — next sprint','Low — backlog'],
+    apply(ans){
+      DRAFT.priority = /high/i.test(ans) ? 'High' : /low/i.test(ans) ? 'Low' : 'Medium';
+      DRAFT.ready = true;
+      return ['d-attrs'];
+    }
+  },
+  {
+    bot:'Done. I’ve assembled RIDER-205 with full provenance — intent, this conversation, and the linked code are all attached. Create it whenever you’re ready.',
+    quick:['Create & link ticket'],
+    final:true
+  }
+];
+
+/* --- Board seed cards --- */
+const BOARD = {
+  backlog:{ name:'Backlog', dot:'#938C81', cards:[
+    { key:'RIDER-211', ttl:'Merchant payout schedule settings', type:'Story', pri:'Low', who:'AL', wc:'#5c7a3d', cov:40, links:[['ok','⦿ 2'],['warn','◎ partial']] },
+    { key:'RIDER-209', ttl:'Onboarding: explain dual-role mode', type:'Task', pri:'Medium', who:'PM', wc:'#3c6e8f', cov:0, links:[['warn','◎ orphan']] },
+  ]},
+  progress:{ name:'In progress', dot:'#D97A14', cards:[
+    { key:'RIDER-204', ttl:'Support driver & merchant roles', type:'Story', pri:'High', who:'MC', wc:'#c0573f', cov:78, links:[['ok','⦿ 5'],['ok','◎ linked']] },
+    { key:'INC-7', ttl:'Crash when role used outside provider', type:'Bug', pri:'High', who:'MC', wc:'#c0573f', cov:100, links:[['ok','⦿ 1'],['ok','◎ linked']] },
+  ]},
+  review:{ name:'In review', dot:'#2C6E9B', cards:[
+    { key:'RIDER-198', ttl:'Persist active role across sessions', type:'Story', pri:'Medium', who:'AL', wc:'#5c7a3d', cov:92, links:[['ok','⦿ 3'],['ok','◎ linked']] },
+  ]},
+  done:{ name:'Done', dot:'#5C7A3D', cards:[
+    { key:'DEC-12', ttl:'New users default to rider, not driver', type:'Decision', pri:'Low', who:'AL', wc:'#5c7a3d', cov:100, links:[['ok','⦿ 1'],['ok','◎ linked']] },
+  ]},
+};
+
+/* live draft state */
+const DRAFT = { title:'', context:'', ac:null, links:null, priority:'', type:'', ready:false };
+
+</script>
+<script>
+/* ============ PyLens prototype behavior ============ */
+const $ = (s,r=document)=>r.querySelector(s);
+const $$ = (s,r=document)=>[...r.querySelectorAll(s)];
+
+/* ---------- view + tab switching ---------- */
+$('#viewseg').addEventListener('click', e=>{
+  const b = e.target.closest('button'); if(!b) return;
+  $$('#viewseg button').forEach(x=>x.classList.toggle('on', x===b));
+  const v = b.dataset.view;
+  $('#view-editor').classList.toggle('on', v==='editor');
+  $('#view-workspace').classList.toggle('on', v==='workspace');
+  hideCard();
+});
+function gotoWorkspace(pane){
+  $$('#viewseg button').forEach(x=>x.classList.toggle('on', x.dataset.view==='workspace'));
+  $('#view-editor').classList.remove('on');
+  $('#view-workspace').classList.add('on');
+  hideCard();
+  if(pane) setPane(pane);
+}
+function setPane(p){
+  $$('#wstabs button').forEach(x=>x.classList.toggle('on', x.dataset.pane===p));
+  $$('.ws-rail .ic[data-pane]').forEach(x=>x.classList.toggle('on', x.dataset.pane===p));
+  $('#pane-intake').classList.toggle('on', p==='intake');
+  $('#pane-board').classList.toggle('on', p==='board');
+}
+$('#wstabs').addEventListener('click', e=>{ const b=e.target.closest('button'); if(b) setPane(b.dataset.pane); });
+$$('.ws-rail .ic[data-pane]').forEach(ic=> ic.addEventListener('click', ()=>setPane(ic.dataset.pane)));
+
+/* ---------- render code lines ---------- */
+const codeEl = $('#ed-code');
+CODE.forEach((line, i)=>{
+  const row = document.createElement('div');
+  row.className = 'ln' + (line.prov ? ' prov' : '');
+  let html = `<span class="gut">${i+1}</span><span class="code">`;
+  if(line.prov) html += `<span class="bulb">◎</span>`;
+  line.t.forEach(([cls,txt])=> html += `<span class="${cls}">${esc(txt)}</span>`);
+  if(line.prov){
+    const p = PROV[line.prov];
+    html += `<span class="ghost"><span class="gi">◎</span> ${esc(p.ghost)}</span>`;
+  }
+  html += `</span>`;
+  row.innerHTML = html;
+  if(line.prov){
+    row.dataset.prov = line.prov;
+    row.addEventListener('mouseenter', ()=>showCard(line.prov, row));
+    row.addEventListener('mouseleave', scheduleHide);
+  }
+  codeEl.appendChild(row);
+});
+function esc(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+/* ---------- provenance hover card ---------- */
+const card = $('#prov-card');
+let hideTimer = null;
+card.addEventListener('mouseenter', ()=>clearTimeout(hideTimer));
+card.addEventListener('mouseleave', scheduleHide);
+function scheduleHide(){ hideTimer = setTimeout(hideCard, 160); }
+function hideCard(){ card.classList.remove('show'); }
+
+function showCard(key, row){
+  clearTimeout(hideTimer);
+  const p = PROV[key];
+  card.innerHTML = `
+    <div class="pc-top">
+      <div class="av">${p.init}</div>
+      <div>
+        <div class="who">${p.who}</div>
+        <div class="when">${p.when}</div>
+      </div>
+      <div class="cov">✓ ${p.cov}</div>
+    </div>
+    <div class="pc-body">
+      <div class="req-tag">${p.tag}</div>
+      <div class="req-ttl">${p.ttl}</div>
+      <div class="req-desc">${p.desc}</div>
+      <div class="chain">
+        <div class="step">
+          <div class="rail"><span class="nd sq"></span><span class="bar"></span></div>
+          <div class="ct">
+            <div class="lbl">Requirement · <b>${p.tag}</b></div>
+            <div class="meta">${p.ttl}</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="rail"><span class="nd"></span><span class="bar"></span></div>
+          <div class="ct">
+            <div class="lbl">⎇ AI conversation · <b>${p.conv.tool}</b></div>
+            <div class="snip">${p.conv.snip}</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="rail"><span class="nd dia"></span></div>
+          <div class="ct">
+            <div class="lbl">⦿ Commit · <b>${p.commit.sha}</b> · ${p.commit.when}</div>
+            <div class="meta">${p.commit.msg}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="pc-acts">
+      <button class="explain">✦ Explain</button><span class="sep">|</span>
+      <button data-act="ticket">▦ Open ${p.ticket}</button><span class="sep">|</span>
+      <button data-act="conv">⎇ View conversation</button><span class="sep">|</span>
+      <button data-act="dash">◎ Dashboard</button>
+    </div>`;
+  // position: to the right of the line, clamped to viewport
+  const r = row.getBoundingClientRect();
+  card.classList.add('show');
+  const cw = card.offsetWidth, ch = card.offsetHeight;
+  let left = Math.min(r.left + 360, window.innerWidth - cw - 16);
+  left = Math.max(16, left);
+  let top = r.bottom + 6;
+  if(top + ch > window.innerHeight - 12) top = Math.max(64, r.top - ch - 6);
+  card.style.left = left + 'px';
+  card.style.top = top + 'px';
+  card.querySelectorAll('[data-act]').forEach(b=>{
+    b.addEventListener('click', ()=>{
+      hideCard();
+      if(b.dataset.act==='ticket' || b.dataset.act==='dash') gotoWorkspace('board');
+      else if(b.dataset.act==='conv') gotoWorkspace('intake');
+    });
+  });
+  card.querySelector('.explain').addEventListener('click', ()=>{
+    toast('PyLens: this exists because ' + p.tag + ' — ' + p.ttl.toLowerCase());
+  });
+}
+
+/* ---------- toast ---------- */
+let toastTimer;
+function toast(msg){
+  $('#toast-txt').textContent = msg;
+  $('#toast').classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>$('#toast').classList.remove('show'), 3200);
+}
+
+/* ============ INTAKE CONVERSATION ============ */
+const chatlog = $('#chatlog'), quick = $('#quick'), composer = $('#composer'), sendBtn = $('#send');
+let step = 0;
+
+function botMessage(s){
+  // typing indicator
+  const t = document.createElement('div');
+  t.className = 'msg bot';
+  t.innerHTML = `<div class="ava">◎</div><div class="bub"><div class="typing"><span></span><span></span><span></span></div></div>`;
+  chatlog.appendChild(t); scrollChat();
+  quick.innerHTML = ''; setComposer(false);
+  setTimeout(()=>{
+    let inner = s.bot;
+    if(s.rich && s.pills){
+      inner += `<div style="margin-top:8px">` + s.pills.map(p=>`<span class="pill">⦿ ${p}</span>`).join('') + `</div>`;
+    }
+    t.querySelector('.bub').innerHTML = inner;
+    t.querySelector('.bub').classList.toggle('bot-rich', !!s.rich);
+    scrollChat();
+    renderQuick(s);
+    if(!s.final) setComposer(true);
+  }, 620);
+}
+function meMessage(txt){
+  const m = document.createElement('div');
+  m.className = 'msg me';
+  m.innerHTML = `<div class="ava">PM</div><div class="bub">${escapeHtml(txt)}</div>`;
+  chatlog.appendChild(m); scrollChat();
+}
+function renderQuick(s){
+  quick.innerHTML = '';
+  (s.quick||[]).forEach(q=>{
+    const b = document.createElement('button');
+    b.textContent = q;
+    b.addEventListener('click', ()=>answer(q, s));
+    quick.appendChild(b);
+  });
+}
+function answer(text, s){
+  if(s.final){ createTicket(); return; }
+  meMessage(text);
+  quick.innerHTML = '';
+  const changed = s.apply ? s.apply(text) : [];
+  renderDraft(changed);
+  step++;
+  if(step < SCRIPT.length) setTimeout(()=>botMessage(SCRIPT[step]), 380);
+}
+function setComposer(on){ composer.disabled=!on; sendBtn.disabled=!on; }
+sendBtn.addEventListener('click', submitTyped);
+composer.addEventListener('keydown', e=>{ if(e.key==='Enter') submitTyped(); });
+function submitTyped(){
+  const v = composer.value.trim(); if(!v || composer.disabled) return;
+  composer.value='';
+  answer(v, SCRIPT[step]);
+}
+function scrollChat(){ chatlog.scrollTop = chatlog.scrollHeight; }
+function escapeHtml(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+/* ---------- live ticket draft ---------- */
+function renderDraft(flash=[]){
+  const set=(id,html,empty)=>{ const el=$('#'+id); el.innerHTML=html; el.classList.toggle('empty',!!empty); };
+  set('d-title', DRAFT.title || 'Waiting for the conversation to begin…', !DRAFT.title);
+  set('d-context', DRAFT.context || '—', !DRAFT.context);
+  if(DRAFT.ac){
+    set('d-ac', DRAFT.ac.map(a=>`<div class="ac"><span class="ck">✓</span><span>${escapeHtml(a)}</span></div>`).join(''));
+  } else set('d-ac','—',true);
+  if(DRAFT.links){
+    set('d-links', DRAFT.links.map(([f,sp])=>`<div class="linkrow"><span class="ic">⦿</span><span class="pth">${escapeHtml(f)}</span><span class="sp">·</span><span>${escapeHtml(sp)}</span></div>`).join(''));
+  } else set('d-links','—',true);
+  if(DRAFT.priority || DRAFT.type){
+    const pc = DRAFT.priority==='High'?'pri-high':'pri-med';
+    set('d-attrs', `<div class="chips">${DRAFT.type?`<span class="chip type">${DRAFT.type}</span>`:''}${DRAFT.priority?`<span class="chip ${pc}">⚑ ${DRAFT.priority}</span>`:''}</div>`);
+  } else set('d-attrs','—',true);
+  // meta + button
+  const n = DRAFT.links ? DRAFT.links.length : 0;
+  $('#draftmeta').innerHTML = `PyLens will link <b>${n} code span${n===1?'':'s'}</b> on creation`;
+  $('#createbtn').disabled = !DRAFT.ready;
+  flash.forEach(id=>{ const el=$('#'+id); el.classList.remove('fill'); void el.offsetWidth; el.classList.add('fill'); });
+}
+
+/* ---------- create ticket -> board ---------- */
+let created = false;
+$('#createbtn').addEventListener('click', createTicket);
+function createTicket(){
+  if(created || !DRAFT.ready) return;
+  created = true;
+  const card = {
+    key:'RIDER-205', ttl:DRAFT.title, type:DRAFT.type||'Story',
+    pri:DRAFT.priority||'Medium', who:'PM', wc:'#3c6e8f',
+    cov: DRAFT.links ? Math.min(60, DRAFT.links.length*20) : 0,
+    links:[['ok','⦿ '+(DRAFT.links?DRAFT.links.length:0)],['ok','◎ linked']],
+    isNew:true
+  };
+  BOARD.progress.cards.unshift(card);
+  renderBoard();
+  $('#draftkey').textContent = 'RIDER-205 · created';
+  $('#createbtn').disabled = true;
+  $('#createbtn').textContent = '✓ Created';
+  toast('Created RIDER-205 and linked '+(DRAFT.links?DRAFT.links.length:0)+' code spans to the provenance graph');
+  setTimeout(()=>setPane('board'), 700);
+}
+
+$('#resetbtn').addEventListener('click', ()=>{
+  Object.assign(DRAFT,{title:'',context:'',ac:null,links:null,priority:'',type:'',ready:false});
+  created=false; step=0;
+  chatlog.innerHTML=''; $('#createbtn').textContent='Create & link ticket'; $('#createbtn').disabled=true;
+  $('#draftkey').textContent='RIDER-205 · new';
+  // remove any created card
+  BOARD.progress.cards = BOARD.progress.cards.filter(c=>c.key!=='RIDER-205');
+  renderDraft(); renderBoard();
+  botMessage(SCRIPT[0]);
+});
+
+/* ---------- board render ---------- */
+const boardEl = $('#board');
+function renderBoard(){
+  boardEl.innerHTML='';
+  Object.values(BOARD).forEach(col=>{
+    const c = document.createElement('div');
+    c.className='col';
+    c.innerHTML = `<div class="col-h"><span class="dotc" style="background:${col.dot}"></span>${col.name}<span class="ct">${col.cards.length}</span></div>`;
+    const list = document.createElement('div'); list.className='col-list';
+    col.cards.forEach(card=>{
+      const pc = card.pri==='High'?'pri-high':card.pri==='Low'?'type':'pri-med';
+      const el = document.createElement('div');
+      el.className='tk'+(card.isNew?' new':'');
+      el.innerHTML = `
+        <div class="ttl">${escapeHtml(card.ttl)}</div>
+        ${card.cov!==undefined?`<div class="cover"><i style="width:${card.cov}%"></i></div>`:''}
+        <div class="tags"><span class="chip type">${card.type}</span><span class="chip ${pc}">⚑ ${card.pri}</span></div>
+        <div class="foot">
+          <span class="key">${card.key}</span>
+          <span class="prov">${card.links.map(([k,t])=>`<span class="lk ${k}">${t}</span>`).join('')}</span>
+          <span class="who" style="background:${card.wc}">${card.who}</span>
+        </div>`;
+      el.addEventListener('click', ()=>toast(card.key+' · coverage '+(card.cov||0)+'% — open to see its full provenance trail'));
+      list.appendChild(el);
+      card.isNew=false;
+    });
+    c.appendChild(list);
+    boardEl.appendChild(c);
+  });
+}
+
+/* ---------- init ---------- */
+renderDraft();
+renderBoard();
+botMessage(SCRIPT[0]);
+
+</script>
+</body>
 </html>
