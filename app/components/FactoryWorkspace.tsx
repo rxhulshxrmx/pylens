@@ -16,7 +16,6 @@ import {
   Plus,
   Search,
   Send,
-  Sparkles,
   Ticket,
 } from "lucide-react"
 import { useEffect, useMemo, useState } from "react"
@@ -25,7 +24,7 @@ type View = "overview" | "specs" | "tickets" | "board" | "files"
 
 const STATUS_ORDER: TicketStatus[] = ["Backlog", "Ready", "In Progress", "Review", "Done"]
 const DEFAULT_PROMPT =
-  "Build an AI software factory that turns product intent into feature specs, file plans, Jira-ready tickets, and implementation handoffs with agents."
+  "Build an AI software factory that turns product intent into feature specs, file plans, tickets, and implementation handoffs with agents."
 
 export default function FactoryWorkspace() {
   const [projects, setProjects] = useState<FactoryProject[]>([])
@@ -183,7 +182,7 @@ export default function FactoryWorkspace() {
       return
     }
     setError(null)
-    setWorking("Creating Jira tickets")
+    setWorking("Creating tickets")
     try {
       const res = await fetch("/api/factory/tickets/generate", {
         method: "POST",
@@ -376,12 +375,7 @@ function WorkspacePicker({
   return (
     <div className="min-h-screen bg-[var(--geist-background-100)] text-[var(--geist-primary)]">
       <header className="flex h-14 items-center border-b border-[var(--geist-gray-alpha-200)] px-6">
-        <div className="flex items-center gap-2">
-          <div className="flex h-7 w-7 items-center justify-center rounded-[var(--geist-radius-sm)] bg-[var(--geist-primary)] text-[var(--geist-background-100)]">
-            <Sparkles size={15} />
-          </div>
-          <div className="text-sm font-semibold">Factory</div>
-        </div>
+        <div className="text-lg font-semibold tracking-tight">Pylens</div>
       </header>
       <main className="mx-auto w-full max-w-6xl px-6 py-8">
         <div className="flex items-end justify-between gap-4">
@@ -513,15 +507,8 @@ function FactoryNav({
   return (
     <aside className="flex h-screen w-[248px] shrink-0 flex-col border-r border-[var(--geist-gray-alpha-200)] bg-[var(--geist-background-200)]">
       <div className="flex h-14 items-center gap-2 px-3">
-        <button
-          onClick={onHome}
-          className="flex h-7 w-7 items-center justify-center rounded-[var(--geist-radius-sm)] bg-[var(--geist-primary)] text-[var(--geist-background-100)]"
-          aria-label="Workspaces"
-        >
-          <Sparkles size={15} />
-        </button>
         <div className="min-w-0 flex-1">
-          <div className="truncate text-sm font-semibold">Factory</div>
+          <button onClick={onHome} className="truncate text-lg font-semibold tracking-tight hover:opacity-70 transition-opacity">Pylens</button>
         </div>
         <button
           className="rounded-[var(--geist-radius-sm)] p-1.5 text-[var(--geist-gray-800)] hover:bg-[var(--geist-gray-alpha-100)] hover:text-[var(--geist-primary)]"
@@ -728,7 +715,7 @@ function TicketsView({
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-4 px-6 py-6">
       <div>
-        <h1 className="text-2xl font-semibold tracking-[-0.96px]">Jira-ready Tickets</h1>
+        <h1 className="text-2xl font-semibold tracking-[-0.96px]">Tickets</h1>
         <p className="mt-1 text-sm text-[var(--geist-gray-800)]">Persisted in Neon. Move tickets forward to update the board.</p>
       </div>
       <div className="overflow-hidden rounded-[var(--geist-radius-md)] border border-[var(--geist-gray-alpha-200)]">

@@ -19,7 +19,7 @@ Include product goals, users, core workflows, data model, agent responsibilities
 
 export function ticketPrompt(specTitle: string, specSummary: string, sections: { title: string; body: string }[]) {
   return `
-Convert this feature spec into Jira-ready tickets.
+Convert this feature spec into tickets.
 
 Spec: ${specTitle}
 Summary: ${specSummary}

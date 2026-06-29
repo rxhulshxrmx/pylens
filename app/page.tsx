@@ -14,12 +14,7 @@ export default async function LandingPage() {
     <div className="min-h-screen bg-[var(--geist-background-100)] text-[var(--geist-primary)]">
       {/* Topbar */}
       <header className="flex h-14 items-center justify-between border-b border-[var(--geist-gray-alpha-200)] px-6">
-        <div className="flex items-center gap-2">
-          <div className="flex h-7 w-7 items-center justify-center rounded-[var(--geist-radius-sm)] bg-[var(--geist-primary)]">
-            <Sparkles size={15} className="text-[var(--geist-background-100)]" />
-          </div>
-          <span className="text-sm font-semibold">Factory</span>
-        </div>
+        <span className="text-lg font-semibold tracking-tight">Pylens</span>
 
         {session ? (
           <Link
@@ -29,12 +24,14 @@ export default async function LandingPage() {
             Dashboard
           </Link>
         ) : (
-          <Link
-            href="/sign-in"
-            className="flex h-8 items-center rounded-[var(--geist-radius-sm)] border border-[var(--geist-gray-alpha-300)] bg-[var(--geist-background-200)] px-3 text-sm font-medium transition-colors hover:bg-[var(--geist-gray-alpha-100)]"
-          >
-            Sign in
-          </Link>
+          <form action={handleSignIn}>
+            <button
+              type="submit"
+              className="flex h-8 items-center rounded-[var(--geist-radius-sm)] border border-[var(--geist-gray-alpha-300)] bg-[var(--geist-background-200)] px-3 text-sm font-medium transition-colors hover:bg-[var(--geist-gray-alpha-100)]"
+            >
+              Sign in
+            </button>
+          </form>
         )}
       </header>
 
@@ -42,7 +39,7 @@ export default async function LandingPage() {
       <section className="mx-auto flex w-full max-w-4xl flex-col items-center px-6 pb-16 pt-20 text-center">
         <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-[var(--geist-gray-alpha-200)] bg-[var(--geist-background-200)] px-3 py-1 text-xs text-[var(--geist-gray-800)]">
           <Sparkles size={11} />
-          AI Software Factory
+          AI Software Platform
         </div>
 
         <h1 className="mt-4 max-w-2xl text-[clamp(2.5rem,6vw,4rem)] font-semibold leading-[1.1] tracking-[-2px] text-[var(--geist-primary)]">
@@ -50,7 +47,7 @@ export default async function LandingPage() {
         </h1>
 
         <p className="mt-6 max-w-xl text-base leading-7 text-[var(--geist-gray-800)]">
-          Describe what you want to build. Factory generates feature specs, Jira-ready tickets, a Kanban board, and file blueprints — all driven by agents.
+          Describe what you want to build. Pylens generates feature specs, tickets, a Kanban board, and file blueprints, all driven by agents.
         </p>
 
         <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
@@ -71,12 +68,6 @@ export default async function LandingPage() {
               </button>
             </form>
           )}
-          <Link
-            href="/sign-in"
-            className="flex h-10 items-center rounded-[var(--geist-radius-sm)] border border-[var(--geist-gray-alpha-300)] px-5 text-sm font-medium transition-colors hover:bg-[var(--geist-gray-alpha-100)]"
-          >
-            Sign in
-          </Link>
         </div>
       </section>
 
@@ -89,20 +80,16 @@ export default async function LandingPage() {
         />
         <FeatureCard
           icon={Ticket}
-          title="Jira-ready Tickets"
-          description="Each spec becomes scoped, prioritised tickets with acceptance criteria."
+          title="Tickets"
+          description="Turn specs into scoped tickets with priorities and acceptance criteria."
         />
         <FeatureCard
           icon={ClipboardList}
           title="Kanban Board"
-          description="Move tickets through Backlog → Ready → In Progress → Review → Done."
+          description="Track work across Backlog, Ready, In Progress, Review, and Done."
         />
       </section>
 
-      {/* Footer */}
-      <footer className="border-t border-[var(--geist-gray-alpha-200)] py-6 text-center text-xs text-[var(--geist-gray-700)]">
-        Factory — built with Next.js and Claude
-      </footer>
     </div>
   )
 }

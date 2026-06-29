@@ -55,7 +55,7 @@ Return only valid JSON in this exact shape:
 
     const parsed = ticketSchema.parse(extractJson(result.text))
     const tickets = await createTickets(spec.project_id, spec.id, parsed.tickets.slice(0, 10))
-    await createAgentEvent(spec.project_id, "agent", `Created ${tickets.length} Jira-ready ticket drafts from ${spec.title}.`)
+    await createAgentEvent(spec.project_id, "agent", `Created ${tickets.length} ticket drafts from ${spec.title}.`)
 
     return Response.json({ tickets })
   } catch (err) {

@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Agent",
-  description: "AI Agent Interface",
+  title: "Pylens",
+  description: "AI software platform",
 };
 
 export default function RootLayout({

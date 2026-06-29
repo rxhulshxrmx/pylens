@@ -14,7 +14,7 @@ import { sql } from "./index"
 
 const DEFAULT_PROJECT_NAME = "Software Factory"
 const DEFAULT_PROJECT_DESCRIPTION =
-  "Agent-assisted workspace for feature specs, file blueprints, Jira-ready tickets, and delivery boards."
+  "Agent-assisted workspace for feature specs, file blueprints, tickets, and delivery boards."
 
 let schemaReady = false
 let schemaReadyPromise: Promise<void> | null = null
@@ -163,7 +163,7 @@ async function seedProject(projectId: string) {
     { path: "lib/db/factory.ts", purpose: "Neon persistence for factory projects and delivery artifacts" },
     { path: "app/api/factory/route.ts", purpose: "Load the current factory workspace state" },
     { path: "app/api/factory/specs/generate/route.ts", purpose: "Generate feature specs with the planner agent" },
-    { path: "app/api/factory/tickets/generate/route.ts", purpose: "Generate Jira-ready tickets with the ticket agent" },
+    { path: "app/api/factory/tickets/generate/route.ts", purpose: "Generate tickets with the ticket agent" },
   ])
 }
 
