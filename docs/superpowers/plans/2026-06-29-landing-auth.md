@@ -58,7 +58,7 @@ Open `.env` and append these four lines at the bottom:
 
 ```
 # Auth.js v5
-AUTH_SECRET=YQqOq3GbYpMiWdgH5WyZBgW3cy0xke0SkKnzW6INYEE=
+AUTH_SECRET=<generate with: openssl rand -base64 32>
 AUTH_GOOGLE_ID=YOUR_GOOGLE_CLIENT_ID_HERE
 AUTH_GOOGLE_SECRET=YOUR_GOOGLE_CLIENT_SECRET_HERE
 NEXTAUTH_URL=http://localhost:3000

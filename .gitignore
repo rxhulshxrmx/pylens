@@ -2,3 +2,5 @@ node_modules/
 .next/
 .playwright-mcp/
 *.png
+.env
+.env*.local
