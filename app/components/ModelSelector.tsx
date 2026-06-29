@@ -48,14 +48,14 @@ export default function ModelSelector({ selectedModelId, onChange }: Props) {
         <div
           ref={menuRef}
           style={{ top: pos.top, left: pos.left }}
-          className="fixed w-56 bg-[#141414] border border-[#252525] rounded-xl shadow-xl overflow-hidden z-[9999]"
+          className="fixed z-[9999] w-56 overflow-hidden rounded-[var(--geist-radius-md)] border border-[var(--geist-gray-alpha-300)] bg-[var(--geist-background-100)] shadow-[var(--geist-shadow-popover)]"
         >
           {PROVIDERS.map((provider) => {
             const models = ALL_MODELS.filter((m) => m.provider === provider)
             if (!models.length) return null
             return (
               <div key={provider}>
-                <div className="px-3 py-1.5 text-[10px] font-semibold text-[#444] uppercase tracking-wider">
+                <div className="px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-[var(--geist-gray-700)]">
                   {provider}
                 </div>
                 {models.map((model: ModelConfig) => (
@@ -65,16 +65,16 @@ export default function ModelSelector({ selectedModelId, onChange }: Props) {
                       onChange(model.id)
                       setOpen(false)
                     }}
-                    className={`w-full text-left px-3 py-2 text-xs transition-colors flex items-center justify-between
+                    className={`flex w-full items-center justify-between px-3 py-2 text-left text-xs transition-colors
                       ${
                         model.id === selectedModelId
-                          ? "bg-[#1f1f1f] text-[#e5e5e5]"
-                          : "text-[#888] hover:bg-[#1a1a1a] hover:text-[#ccc]"
+                          ? "bg-[var(--geist-blue-100)] text-[var(--geist-primary)]"
+                          : "text-[var(--geist-gray-900)] hover:bg-[var(--geist-gray-alpha-100)] hover:text-[var(--geist-primary)]"
                       }`}
                   >
                     <span>{model.name}</span>
                     {model.speed && (
-                      <span className="text-[#444] text-[10px]">
+                      <span className="text-[10px] text-[var(--geist-gray-700)]">
                         {model.speed}
                       </span>
                     )}
@@ -93,7 +93,7 @@ export default function ModelSelector({ selectedModelId, onChange }: Props) {
       <button
         ref={btnRef}
         onClick={openMenu}
-        className="flex items-center gap-1 px-2.5 py-1.5 rounded-md text-[#666] text-xs hover:bg-[#1f1f1f] hover:text-[#999] transition-colors"
+        className="flex h-8 items-center gap-1 rounded-[var(--geist-radius-sm)] px-2.5 text-xs font-medium text-[var(--geist-gray-900)] transition-colors hover:bg-[var(--geist-gray-alpha-100)] hover:text-[var(--geist-primary)]"
       >
         <span>{selected?.name ?? "Select model"}</span>
         <ChevronDown size={12} />

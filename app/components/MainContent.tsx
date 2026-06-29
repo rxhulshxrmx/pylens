@@ -92,13 +92,14 @@ export default function MainContent({ sidebarOpen, onExpandSidebar, activeChatId
   const hasMessages = messages.length > 0
 
   return (
-    <main className="relative flex-1 flex flex-col h-screen bg-[#0a0a0a]">
+    <main className="relative flex h-screen flex-1 flex-col bg-[var(--geist-background-100)]">
       {!sidebarOpen && (
         <div className="absolute top-4 left-4 z-10">
           <button
             onClick={onExpandSidebar}
-            className="p-1.5 rounded-md text-[#666] hover:text-[#999] hover:bg-[#1a1a1a] transition-colors"
-            title="Expand sidebar"
+            className="rounded-[var(--geist-radius-sm)] p-1.5 text-[var(--geist-gray-800)] transition-colors hover:bg-[var(--geist-gray-alpha-100)] hover:text-[var(--geist-primary)]"
+            title="Expand Sidebar"
+            aria-label="Expand Sidebar"
           >
             <PanelLeft size={16} />
           </button>
@@ -109,7 +110,7 @@ export default function MainContent({ sidebarOpen, onExpandSidebar, activeChatId
       {hasMessages && (
         <div className="flex-1 overflow-y-auto px-6 py-6">
           <div className="flex flex-col items-center">
-            <div className="w-full max-w-[600px] flex flex-col gap-6">
+            <div className="flex w-full max-w-[680px] flex-col gap-6">
               {messages.map((msg) => {
                 const textContent = msg.parts
                   .filter((p) => p.type === "text")
@@ -120,15 +121,15 @@ export default function MainContent({ sidebarOpen, onExpandSidebar, activeChatId
                   <div key={msg.id}>
                     {msg.role === "user" ? (
                       <div className="flex justify-end">
-                        <div className="bg-[#1a1a1a] border border-[#252525] rounded-2xl px-4 py-2.5 max-w-[85%] text-sm text-[#d4d4d4] leading-relaxed whitespace-pre-wrap">
+                        <div className="max-w-[85%] whitespace-pre-wrap rounded-[var(--geist-radius-md)] border border-[var(--geist-gray-alpha-200)] bg-[var(--geist-background-200)] px-4 py-2.5 text-sm leading-6 text-[var(--geist-primary)]">
                           {textContent}
                         </div>
                       </div>
                     ) : (
-                      <div className="text-sm text-[#c0c0c0] leading-relaxed whitespace-pre-wrap">
+                      <div className="whitespace-pre-wrap text-sm leading-6 text-[var(--geist-gray-1000)]">
                         {textContent}
                         {isStreaming && msg.id === messages[messages.length - 1]?.id && (
-                          <span className="inline-block w-1.5 h-3.5 bg-[#555] ml-0.5 animate-pulse rounded-sm" />
+                          <span className="ml-0.5 inline-block h-3.5 w-1.5 animate-pulse rounded-sm bg-[var(--geist-blue-700)]" />
                         )}
                       </div>
                     )}
@@ -141,18 +142,26 @@ export default function MainContent({ sidebarOpen, onExpandSidebar, activeChatId
         </div>
       )}
 
-      {!hasMessages && <div className="h-[100px] pointer-events-none" />}
+      {!hasMessages && (
+        <div className="pointer-events-none flex flex-1 items-end justify-center px-6 pb-10">
+          <div className="w-full max-w-[680px]">
+            <h1 className="text-[32px] font-semibold leading-10 tracking-[-1.28px] text-[var(--geist-primary)]">
+              What are we building?
+            </h1>
+          </div>
+        </div>
+      )}
 
       {/* Chat input */}
-      <div className={`flex justify-center px-6 ${hasMessages ? "pb-6" : "pb-0"}`}>
-        <div className="w-full max-w-[600px]">
-          <div className="bg-[#141414] border border-[#252525] rounded-xl overflow-hidden">
+      <div className={`flex justify-center px-6 ${hasMessages ? "pb-6" : "pb-10"}`}>
+        <div className="w-full max-w-[680px]">
+          <div className="overflow-hidden rounded-[var(--geist-radius-md)] border border-[var(--geist-gray-alpha-300)] bg-[var(--geist-background-100)] shadow-[var(--geist-shadow-raised)]">
             <textarea
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder="Ask to build, fix bugs, explore"
               rows={1}
-              className="w-full bg-transparent px-4 pt-4 pb-2 text-[#ccc] text-sm placeholder-[#444] resize-none outline-none leading-relaxed"
+              className="w-full resize-none bg-transparent px-4 pb-2 pt-4 text-sm leading-6 text-[var(--geist-primary)] outline-none placeholder:text-[var(--geist-gray-700)]"
               onKeyDown={(e) => {
                 if (e.key === "Enter" && !e.shiftKey) {
                   e.preventDefault()
@@ -166,7 +175,7 @@ export default function MainContent({ sidebarOpen, onExpandSidebar, activeChatId
                 <ModelSelector selectedModelId={modelId} onChange={setModelId} />
                 <button
                   type="button"
-                  className="flex items-center gap-1 px-2.5 py-1.5 rounded-md text-[#666] text-xs hover:bg-[#1f1f1f] hover:text-[#999] transition-colors"
+                  className="flex h-8 items-center gap-1 rounded-[var(--geist-radius-sm)] px-2.5 text-xs font-medium text-[var(--geist-gray-900)] transition-colors hover:bg-[var(--geist-gray-alpha-100)] hover:text-[var(--geist-primary)]"
                 >
                   MCPs
                 </button>
@@ -175,7 +184,8 @@ export default function MainContent({ sidebarOpen, onExpandSidebar, activeChatId
               <div className="flex items-center gap-1.5">
                 <button
                   type="button"
-                  className="p-1.5 rounded-md text-[#555] hover:text-[#888] hover:bg-[#1f1f1f] transition-colors"
+                  className="rounded-[var(--geist-radius-sm)] p-1.5 text-[var(--geist-gray-800)] transition-colors hover:bg-[var(--geist-gray-alpha-100)] hover:text-[var(--geist-primary)]"
+                  aria-label="Attach Image"
                 >
                   <Image size={15} />
                 </button>
@@ -183,7 +193,8 @@ export default function MainContent({ sidebarOpen, onExpandSidebar, activeChatId
                   <button
                     type="button"
                     onClick={stop}
-                    className="w-7 h-7 rounded-full flex items-center justify-center bg-[#e5e5e5] text-black hover:bg-white transition-colors"
+                    className="flex h-7 w-7 items-center justify-center rounded-full bg-[var(--geist-primary)] text-[var(--geist-background-100)] transition-colors hover:bg-[var(--geist-gray-900)]"
+                    aria-label="Stop Generation"
                   >
                     <Square size={10} fill="currentColor" />
                   </button>
@@ -192,11 +203,12 @@ export default function MainContent({ sidebarOpen, onExpandSidebar, activeChatId
                     type="button"
                     onClick={submit}
                     disabled={!input.trim()}
-                    className={`w-7 h-7 rounded-full flex items-center justify-center transition-colors ${
+                    className={`flex h-7 w-7 items-center justify-center rounded-full transition-colors ${
                       input.trim()
-                        ? "bg-[#e5e5e5] text-black hover:bg-white cursor-pointer"
-                        : "bg-[#1f1f1f] text-[#444] cursor-not-allowed"
+                        ? "cursor-pointer bg-[var(--geist-primary)] text-[var(--geist-background-100)] hover:bg-[var(--geist-gray-900)]"
+                        : "cursor-not-allowed bg-[var(--geist-gray-100)] text-[var(--geist-gray-700)]"
                     }`}
+                    aria-label="Send Message"
                   >
                     <ArrowUp size={14} strokeWidth={2.5} />
                   </button>
@@ -207,7 +219,7 @@ export default function MainContent({ sidebarOpen, onExpandSidebar, activeChatId
         </div>
       </div>
 
-      {!hasMessages && <div className="flex-1" />}
+      {!hasMessages && <div className="h-8" />}
     </main>
   )
 }

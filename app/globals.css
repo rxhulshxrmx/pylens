@@ -1,5 +1,46 @@
 @import "tailwindcss";
 
+:root {
+  color-scheme: dark;
+  --geist-primary: #ededed;
+  --geist-secondary: #a1a1a1;
+  --geist-tertiary: #006bff;
+  --geist-background-100: #0a0a0a;
+  --geist-background-200: #111111;
+  --geist-gray-100: #1a1a1a;
+  --geist-gray-200: #1f1f1f;
+  --geist-gray-300: #292929;
+  --geist-gray-400: #2e2e2e;
+  --geist-gray-500: #454545;
+  --geist-gray-600: #878787;
+  --geist-gray-700: #8f8f8f;
+  --geist-gray-800: #a1a1a1;
+  --geist-gray-900: #c7c7c7;
+  --geist-gray-1000: #ededed;
+  --geist-gray-alpha-100: #ffffff0f;
+  --geist-gray-alpha-200: #ffffff17;
+  --geist-gray-alpha-300: #ffffff21;
+  --geist-gray-alpha-400: #ffffff26;
+  --geist-gray-alpha-500: #ffffff3b;
+  --geist-gray-alpha-600: #ffffff5c;
+  --geist-gray-alpha-700: #ffffff73;
+  --geist-blue-100: #001b3f;
+  --geist-blue-700: #3291ff;
+  --geist-blue-800: #0070f3;
+  --geist-red-100: #2a000a;
+  --geist-red-700: #ff1a4b;
+  --geist-red-800: #e2163a;
+  --geist-green-100: #06220b;
+  --geist-green-700: #3dd45f;
+  --geist-radius-sm: 6px;
+  --geist-radius-md: 12px;
+  --geist-shadow-raised: 0 2px 2px rgba(0, 0, 0, 0.24);
+  --geist-shadow-popover: 0 1px 1px rgba(0, 0, 0, 0.24),
+    0 4px 8px -4px rgba(0, 0, 0, 0.32),
+    0 16px 24px -8px rgba(0, 0, 0, 0.42);
+  --geist-focus-ring: 0 0 0 2px #0a0a0a, 0 0 0 4px #3291ff;
+}
+
 * {
   box-sizing: border-box;
 }
@@ -7,13 +48,35 @@
 body {
   margin: 0;
   padding: 0;
-  background: #0a0a0a;
-  color: #e5e5e5;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: var(--geist-background-100);
+  color: var(--geist-primary);
+  font-family: var(--font-geist-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 14px;
+  line-height: 20px;
+}
+
+button,
+textarea,
+input {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+}
+
+:focus-visible {
+  outline: 0;
+  box-shadow: var(--geist-focus-ring);
 }
 
 ::-webkit-scrollbar {
-  width: 4px;
+  width: 8px;
+  height: 8px;
 }
 
 ::-webkit-scrollbar-track {
@@ -21,6 +84,14 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #333;
-  border-radius: 2px;
+  background: var(--geist-gray-alpha-300);
+  border: 2px solid transparent;
+  border-radius: 9999px;
+  background-clip: padding-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--geist-gray-alpha-500);
+  border: 2px solid transparent;
+  background-clip: padding-box;
 }
