@@ -1,8 +1,10 @@
 "use client"
 
-import type { AgentEvent, FactoryProject, FactoryState, FactoryTicket, FeatureSpec, TicketStatus } from "@/lib/factory/types"
+import type { AgentEvent, FactoryProject, FactoryState, FactoryTicket, FeatureSpec, TicketPriority, TicketStatus, TicketType } from "@/lib/factory/types"
 import {
+  BookOpen,
   Bot,
+  Bug as BugIcon,
   CheckCircle2,
   ChevronRight,
   ClipboardList,
@@ -13,18 +15,43 @@ import {
   Loader2,
   MoreHorizontal,
   PanelLeft,
+  PanelRight,
   Plus,
   Search,
   Send,
+  Square,
   Ticket,
+  Zap,
 } from "lucide-react"
-import { useEffect, useMemo, useState } from "react"
+import React, { useEffect, useMemo, useState } from "react"
 
 type View = "overview" | "specs" | "tickets" | "board" | "files"
 
 const STATUS_ORDER: TicketStatus[] = ["Backlog", "Ready", "In Progress", "Review", "Done"]
 const DEFAULT_PROMPT =
   "Build an AI software factory that turns product intent into feature specs, file plans, tickets, and implementation handoffs with agents."
+
+const STATUS_CONFIG: Record<TicketStatus, { color: string; bg: string }> = {
+  Backlog: { color: "#8f8f8f", bg: "rgba(143,143,143,0.08)" },
+  Ready: { color: "#3291ff", bg: "rgba(50,145,255,0.08)" },
+  "In Progress": { color: "#f59e0b", bg: "rgba(245,158,11,0.08)" },
+  Review: { color: "#a855f7", bg: "rgba(168,85,247,0.08)" },
+  Done: { color: "#3dd45f", bg: "rgba(61,212,95,0.08)" },
+}
+
+const PRIORITY_COLOR: Record<TicketPriority, string> = {
+  P0: "#ff1a4b",
+  P1: "#f59e0b",
+  P2: "#8f8f8f",
+}
+
+type IconComponent = typeof FileText
+const TYPE_CONFIG: Record<TicketType, { icon: IconComponent; color: string }> = {
+  Epic: { icon: Zap, color: "#a855f7" },
+  Story: { icon: BookOpen, color: "#3291ff" },
+  Task: { icon: Square, color: "#8f8f8f" },
+  Bug: { icon: BugIcon, color: "#ff1a4b" },
+}
 
 export default function FactoryWorkspace() {
   const [projects, setProjects] = useState<FactoryProject[]>([])
@@ -33,6 +60,7 @@ export default function FactoryWorkspace() {
   const [prompt, setPrompt] = useState(DEFAULT_PROMPT)
   const [agentInput, setAgentInput] = useState("")
   const [navOpen, setNavOpen] = useState(true)
+  const [agentPanelOpen, setAgentPanelOpen] = useState(true)
   const [loading, setLoading] = useState(true)
   const [working, setWorking] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -48,8 +76,34 @@ export default function FactoryWorkspace() {
   }, [state?.tickets])
 
   useEffect(() => {
-    void loadProjects()
+    void initialLoad()
   }, [])
+
+  async function initialLoad() {
+    setError(null)
+    setLoading(true)
+    try {
+      const res = await fetch("/api/factory/projects", { cache: "no-store" })
+      const json = await res.json()
+      if (!res.ok) throw new Error(json.error ?? "Failed to load workspaces")
+      const projects: FactoryProject[] = json.projects ?? []
+      setProjects(projects)
+
+      const lastId = localStorage.getItem("pylens_project")
+      if (lastId && projects.some((p) => p.id === lastId)) {
+        const projectRes = await fetch(`/api/factory?projectId=${lastId}`, { cache: "no-store" })
+        const projectJson = await projectRes.json()
+        if (projectRes.ok) {
+          setState(projectJson)
+          setView("overview")
+        }
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to load workspaces")
+    } finally {
+      setLoading(false)
+    }
+  }
 
   async function loadProjects() {
     setError(null)
@@ -66,6 +120,12 @@ export default function FactoryWorkspace() {
     }
   }
 
+  function goHome() {
+    localStorage.removeItem("pylens_project")
+    setState(null)
+    void loadProjects()
+  }
+
   async function openWorkspace(projectId: string) {
     setError(null)
     setLoading(true)
@@ -73,6 +133,7 @@ export default function FactoryWorkspace() {
       const res = await fetch(`/api/factory?projectId=${projectId}`, { cache: "no-store" })
       const json = await res.json()
       if (!res.ok) throw new Error(json.error ?? "Failed to open workspace")
+      localStorage.setItem("pylens_project", projectId)
       setState(json)
       setView("overview")
     } catch (err) {
@@ -141,7 +202,10 @@ export default function FactoryWorkspace() {
         throw new Error(json.error ?? "Failed to delete workspace")
       }
       setProjects((items) => items.filter((item) => item.id !== projectId))
-      if (state?.project.id === projectId) setState(null)
+      if (state?.project.id === projectId) {
+        localStorage.removeItem("pylens_project")
+        setState(null)
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to delete workspace")
     }
@@ -283,19 +347,20 @@ export default function FactoryWorkspace() {
 
   return (
     <div className="flex h-screen overflow-hidden bg-[var(--geist-background-100)] text-[var(--geist-primary)]">
-      {navOpen && <FactoryNav active={view} onChange={setView} onCollapse={() => setNavOpen(false)} onHome={() => {
-        setState(null)
-        void loadProjects()
-      }} />}
+      {navOpen && (
+        <FactoryNav
+          active={view}
+          onChange={setView}
+          onCollapse={() => setNavOpen(false)}
+          onHome={goHome}
+        />
+      )}
       <main className="flex min-w-0 flex-1 flex-col">
         <FactoryTopbar
           navOpen={navOpen}
           onExpand={() => setNavOpen(true)}
           projectName={state.project.name}
-          onHome={() => {
-            setState(null)
-            void loadProjects()
-          }}
+          onHome={goHome}
         />
         {error && (
           <div className="border-b border-[var(--geist-red-700)] bg-[var(--geist-red-100)] px-4 py-2 text-sm text-[var(--geist-red-700)]">
@@ -310,7 +375,13 @@ export default function FactoryWorkspace() {
             </span>
           </div>
         )}
-        <div className="grid min-h-0 flex-1 grid-cols-[minmax(0,1fr)_340px] max-[1100px]:grid-cols-1">
+        <div
+          className={`grid min-h-0 flex-1 max-[1100px]:grid-cols-1 ${
+            agentPanelOpen
+              ? "grid-cols-[minmax(0,1fr)_340px]"
+              : "grid-cols-[minmax(0,1fr)_40px]"
+          }`}
+        >
           <section className="min-h-0 overflow-y-auto">
             {view === "overview" && (
               <Overview
@@ -325,8 +396,17 @@ export default function FactoryWorkspace() {
                 working={Boolean(working)}
               />
             )}
-            {view === "specs" && <SpecsView specs={state.specs} generateTickets={generateTickets} working={Boolean(working)} />}
-            {view === "tickets" && <TicketsView tickets={state.tickets} moveTicket={moveTicket} generateTickets={() => generateTickets()} working={Boolean(working)} />}
+            {view === "specs" && (
+              <SpecsView specs={state.specs} generateTickets={generateTickets} working={Boolean(working)} />
+            )}
+            {view === "tickets" && (
+              <TicketsView
+                tickets={state.tickets}
+                moveTicket={moveTicket}
+                generateTickets={() => generateTickets()}
+                working={Boolean(working)}
+              />
+            )}
             {view === "board" && <BoardView tickets={state.tickets} moveTicket={moveTicket} />}
             {view === "files" && <FilesView blueprints={state.fileBlueprints} />}
           </section>
@@ -338,6 +418,8 @@ export default function FactoryWorkspace() {
             generateSpec={generateSpec}
             generateTickets={() => generateTickets()}
             working={Boolean(working)}
+            open={agentPanelOpen}
+            onToggle={() => setAgentPanelOpen((v) => !v)}
           />
         </div>
       </main>
@@ -508,7 +590,9 @@ function FactoryNav({
     <aside className="flex h-screen w-[248px] shrink-0 flex-col border-r border-[var(--geist-gray-alpha-200)] bg-[var(--geist-background-200)]">
       <div className="flex h-14 items-center gap-2 px-3">
         <div className="min-w-0 flex-1">
-          <button onClick={onHome} className="truncate text-lg font-semibold tracking-tight hover:opacity-70 transition-opacity">Pylens</button>
+          <button onClick={onHome} className="truncate text-lg font-semibold tracking-tight hover:opacity-70 transition-opacity">
+            Pylens
+          </button>
         </div>
         <button
           className="rounded-[var(--geist-radius-sm)] p-1.5 text-[var(--geist-gray-800)] hover:bg-[var(--geist-gray-alpha-100)] hover:text-[var(--geist-primary)]"
@@ -555,7 +639,11 @@ function FactoryTopbar({
   return (
     <header className="flex h-14 shrink-0 items-center gap-3 border-b border-[var(--geist-gray-alpha-200)] px-4">
       {!navOpen && (
-        <button onClick={onExpand} className="rounded-[var(--geist-radius-sm)] p-1.5 text-[var(--geist-gray-800)] hover:bg-[var(--geist-gray-alpha-100)]" aria-label="Expand Navigation">
+        <button
+          onClick={onExpand}
+          className="rounded-[var(--geist-radius-sm)] p-1.5 text-[var(--geist-gray-800)] hover:bg-[var(--geist-gray-alpha-100)]"
+          aria-label="Expand Navigation"
+        >
           <PanelLeft size={16} />
         </button>
       )}
@@ -607,7 +695,9 @@ function Overview({
     <div className="mx-auto flex w-full max-w-5xl flex-col gap-6 px-6 py-6">
       <section className="rounded-[var(--geist-radius-md)] border border-[var(--geist-gray-alpha-200)] bg-[var(--geist-background-200)] p-5">
         <div className="text-xs font-medium uppercase tracking-[0.14em] text-[var(--geist-gray-700)]">Product Intake</div>
-        <h1 className="mt-4 text-[32px] font-semibold leading-10 tracking-[-1.28px]">Describe the product. The factory creates the work.</h1>
+        <h1 className="mt-4 text-[32px] font-semibold leading-10 tracking-[-1.28px]">
+          Describe the product. The factory creates the work.
+        </h1>
         <textarea
           value={prompt}
           onChange={(event) => setPrompt(event.target.value)}
@@ -638,7 +728,6 @@ function Overview({
         <Metric label="Tickets" value={String(ticketCount)} detail="Persisted drafts" icon={Ticket} />
         <Metric label="Done" value={`${progress}%`} detail="Board progress" icon={CheckCircle2} />
       </section>
-
     </div>
   )
 }
@@ -656,7 +745,15 @@ function Metric({ label, value, detail, icon: Icon }: { label: string; value: st
   )
 }
 
-function SpecsView({ specs, generateTickets, working }: { specs: FeatureSpec[]; generateTickets: (specId: string) => void; working: boolean }) {
+function SpecsView({
+  specs,
+  generateTickets,
+  working,
+}: {
+  specs: FeatureSpec[]
+  generateTickets: (specId: string) => void
+  working: boolean
+}) {
   if (!specs.length) return <EmptyState title="No feature specs yet" text="Generate an FS from the Build screen to start." />
   const spec = specs[0]
   return (
@@ -672,7 +769,9 @@ function SpecsView({ specs, generateTickets, working }: { specs: FeatureSpec[]; 
       <section className="rounded-[var(--geist-radius-md)] border border-[var(--geist-gray-alpha-200)] bg-[var(--geist-background-200)] p-5">
         <div className="flex items-start gap-4">
           <div>
-            <div className="text-xs font-medium text-[var(--geist-gray-700)]">Updated {new Date(spec.updated_at).toLocaleString()}</div>
+            <div className="text-xs font-medium text-[var(--geist-gray-700)]">
+              Updated {new Date(spec.updated_at).toLocaleString()}
+            </div>
             <h1 className="mt-2 text-2xl font-semibold tracking-[-0.96px]">{spec.title}</h1>
             <p className="mt-2 max-w-3xl text-sm leading-6 text-[var(--geist-gray-800)]">{spec.summary}</p>
           </div>
@@ -687,7 +786,10 @@ function SpecsView({ specs, generateTickets, working }: { specs: FeatureSpec[]; 
         </div>
         <div className="mt-6 grid gap-4">
           {spec.sections.map((section) => (
-            <section key={section.title} className="rounded-[var(--geist-radius-sm)] border border-[var(--geist-gray-alpha-200)] bg-[var(--geist-background-100)] p-4">
+            <section
+              key={section.title}
+              className="rounded-[var(--geist-radius-sm)] border border-[var(--geist-gray-alpha-200)] bg-[var(--geist-background-100)] p-4"
+            >
               <h2 className="text-sm font-semibold">{section.title}</h2>
               <p className="mt-2 text-sm leading-6 text-[var(--geist-gray-800)]">{section.body}</p>
             </section>
@@ -710,7 +812,15 @@ function TicketsView({
   working: boolean
 }) {
   if (!tickets.length) {
-    return <EmptyState title="No tickets yet" text="Create tickets from a generated FS." action="Create Tickets" onAction={generateTickets} disabled={working} />
+    return (
+      <EmptyState
+        title="No tickets yet"
+        text="Create tickets from a generated FS."
+        action="Create Tickets"
+        onAction={generateTickets}
+        disabled={working}
+      />
+    )
   }
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-4 px-6 py-6">
@@ -727,7 +837,13 @@ function TicketsView({
   )
 }
 
-function TicketRow({ ticket, moveTicket }: { ticket: FactoryTicket; moveTicket: (ticket: FactoryTicket, status: TicketStatus) => void }) {
+function TicketRow({
+  ticket,
+  moveTicket,
+}: {
+  ticket: FactoryTicket
+  moveTicket: (ticket: FactoryTicket, status: TicketStatus) => void
+}) {
   const index = STATUS_ORDER.indexOf(ticket.status)
   const next = STATUS_ORDER[Math.min(index + 1, STATUS_ORDER.length - 1)]
   return (
@@ -741,7 +857,9 @@ function TicketRow({ ticket, moveTicket }: { ticket: FactoryTicket; moveTicket: 
         <h2 className="mt-2 text-sm font-semibold">{ticket.title}</h2>
         <p className="mt-1 text-sm leading-6 text-[var(--geist-gray-800)]">{ticket.description}</p>
         <ul className="mt-3 list-inside list-disc text-xs leading-5 text-[var(--geist-gray-700)]">
-          {ticket.acceptance.map((item) => <li key={item}>{item}</li>)}
+          {ticket.acceptance.map((item) => (
+            <li key={item}>{item}</li>
+          ))}
         </ul>
       </div>
       <div>
@@ -762,45 +880,162 @@ function TicketRow({ ticket, moveTicket }: { ticket: FactoryTicket; moveTicket: 
   )
 }
 
-function BoardView({ tickets, moveTicket }: { tickets: FactoryTicket[]; moveTicket: (ticket: FactoryTicket, status: TicketStatus) => void }) {
+function BoardView({
+  tickets,
+  moveTicket,
+}: {
+  tickets: FactoryTicket[]
+  moveTicket: (ticket: FactoryTicket, status: TicketStatus) => void
+}) {
+  const [draggingTicket, setDraggingTicket] = useState<FactoryTicket | null>(null)
+  const [dragOverStatus, setDragOverStatus] = useState<TicketStatus | null>(null)
+
+  function handleDragStart(ticket: FactoryTicket) {
+    setDraggingTicket(ticket)
+  }
+
+  function handleDragEnd() {
+    setDraggingTicket(null)
+    setDragOverStatus(null)
+  }
+
+  function handleDragOver(e: React.DragEvent, status: TicketStatus) {
+    e.preventDefault()
+    setDragOverStatus(status)
+  }
+
+  function handleDrop(e: React.DragEvent, status: TicketStatus) {
+    e.preventDefault()
+    if (draggingTicket && draggingTicket.status !== status) {
+      moveTicket(draggingTicket, status)
+    }
+    setDraggingTicket(null)
+    setDragOverStatus(null)
+  }
+
+  function handleDragLeave(e: React.DragEvent) {
+    if (!e.currentTarget.contains(e.relatedTarget as Node)) {
+      setDragOverStatus(null)
+    }
+  }
+
+  if (!tickets.length) return <EmptyState title="No tickets yet" text="Create tickets from a generated FS." />
+
   return (
     <div className="h-full overflow-x-auto px-6 py-6">
-      <div className="grid min-w-[980px] grid-cols-5 gap-3">
+      <div className="flex h-full gap-3" style={{ minWidth: "max-content" }}>
         {STATUS_ORDER.map((status) => {
-          const columnTickets = tickets.filter((ticket) => ticket.status === status)
+          const cfg = STATUS_CONFIG[status]
+          const columnTickets = tickets.filter((t) => t.status === status)
+          const isOver = dragOverStatus === status
           return (
-            <section key={status} className="rounded-[var(--geist-radius-md)] border border-[var(--geist-gray-alpha-200)] bg-[var(--geist-background-200)]">
-              <div className="flex h-11 items-center justify-between border-b border-[var(--geist-gray-alpha-200)] px-3">
-                <h2 className="text-sm font-semibold">{status}</h2>
-                <span className="rounded-full bg-[var(--geist-gray-alpha-100)] px-2 py-0.5 text-xs text-[var(--geist-gray-800)]">{columnTickets.length}</span>
+            <div
+              key={status}
+              onDragOver={(e) => handleDragOver(e, status)}
+              onDrop={(e) => handleDrop(e, status)}
+              onDragLeave={handleDragLeave}
+              className="flex w-[280px] shrink-0 flex-col overflow-hidden rounded-[var(--geist-radius-md)] border bg-[var(--geist-background-200)] transition-colors"
+              style={{
+                borderColor: isOver ? cfg.color : "var(--geist-gray-alpha-200)",
+                boxShadow: isOver ? `0 0 0 1px ${cfg.color}` : "none",
+                backgroundColor: isOver ? cfg.bg : undefined,
+              }}
+            >
+              {/* Column header */}
+              <div className="flex h-10 shrink-0 items-center gap-2 border-b border-[var(--geist-gray-alpha-200)] px-3">
+                <span className="h-2 w-2 shrink-0 rounded-full" style={{ background: cfg.color }} />
+                <span className="flex-1 text-[11px] font-semibold uppercase tracking-[0.1em]" style={{ color: cfg.color }}>
+                  {status}
+                </span>
+                <span className="rounded-full bg-[var(--geist-gray-alpha-100)] px-1.5 py-0.5 text-[10px] font-medium tabular-nums text-[var(--geist-gray-800)]">
+                  {columnTickets.length}
+                </span>
               </div>
-              <div className="flex flex-col gap-2 p-2">
-                {columnTickets.map((ticket) => {
-                  const index = STATUS_ORDER.indexOf(ticket.status)
-                  const next = STATUS_ORDER[Math.min(index + 1, STATUS_ORDER.length - 1)]
-                  return (
-                    <article key={ticket.id} className="rounded-[var(--geist-radius-sm)] border border-[var(--geist-gray-alpha-200)] bg-[var(--geist-background-100)] p-3">
-                      <div className="flex items-center justify-between gap-2">
-                        <span className="font-mono text-xs text-[var(--geist-gray-700)]">{ticket.key}</span>
-                        <Badge>{ticket.priority}</Badge>
-                      </div>
-                      <h3 className="mt-2 text-sm font-medium leading-5">{ticket.title}</h3>
-                      <button
-                        onClick={() => moveTicket(ticket, next)}
-                        disabled={ticket.status === "Done"}
-                        className="mt-3 h-7 rounded-[var(--geist-radius-sm)] border border-[var(--geist-gray-alpha-300)] px-2 text-xs hover:bg-[var(--geist-gray-alpha-100)] disabled:opacity-60"
-                      >
-                        Move
-                      </button>
-                    </article>
-                  )
-                })}
+              {/* Cards */}
+              <div className="flex flex-1 flex-col gap-2 overflow-y-auto p-2">
+                {columnTickets.map((ticket) => (
+                  <BoardCard
+                    key={ticket.id}
+                    ticket={ticket}
+                    moveTicket={moveTicket}
+                    isDragging={draggingTicket?.id === ticket.id}
+                    onDragStart={handleDragStart}
+                    onDragEnd={handleDragEnd}
+                  />
+                ))}
               </div>
-            </section>
+            </div>
           )
         })}
       </div>
     </div>
+  )
+}
+
+function BoardCard({
+  ticket,
+  moveTicket,
+  isDragging,
+  onDragStart,
+  onDragEnd,
+}: {
+  ticket: FactoryTicket
+  moveTicket: (ticket: FactoryTicket, status: TicketStatus) => void
+  isDragging: boolean
+  onDragStart: (ticket: FactoryTicket) => void
+  onDragEnd: () => void
+}) {
+  const { icon: TypeIcon, color: typeColor } = TYPE_CONFIG[ticket.type]
+  const priorityColor = PRIORITY_COLOR[ticket.priority]
+  const ownerInitial = ticket.owner.charAt(0).toUpperCase()
+  const nextIndex = Math.min(STATUS_ORDER.indexOf(ticket.status) + 1, STATUS_ORDER.length - 1)
+  const nextStatus = STATUS_ORDER[nextIndex]
+
+  return (
+    <article
+      draggable
+      onDragStart={() => onDragStart(ticket)}
+      onDragEnd={onDragEnd}
+      className="rounded-[var(--geist-radius-sm)] border border-[var(--geist-gray-alpha-200)] bg-[var(--geist-background-100)] p-3 transition-all cursor-grab active:cursor-grabbing hover:border-[var(--geist-gray-alpha-300)] hover:shadow-[var(--geist-shadow-popover)]"
+      style={{ opacity: isDragging ? 0.35 : 1 }}
+    >
+      {/* Type badge + priority dot */}
+      <div className="flex items-center justify-between gap-1">
+        <span
+          className="inline-flex items-center gap-1 rounded-full px-1.5 py-0.5 text-[10px] font-semibold"
+          style={{ background: typeColor + "1a", color: typeColor }}
+        >
+          <TypeIcon size={9} />
+          {ticket.type}
+        </span>
+        <span
+          className="h-2 w-2 shrink-0 rounded-full"
+          style={{ background: priorityColor }}
+          title={ticket.priority}
+        />
+      </div>
+      {/* Title */}
+      <p className="mt-2 text-xs font-medium leading-[1.45]">{ticket.title}</p>
+      {/* Footer: key + owner avatar + move button */}
+      <div className="mt-3 flex items-center gap-2">
+        <span className="font-mono text-[10px] text-[var(--geist-gray-700)]">{ticket.key}</span>
+        <div className="flex-1" />
+        <button
+          onClick={() => moveTicket(ticket, nextStatus)}
+          disabled={ticket.status === "Done"}
+          className="flex h-5 items-center gap-1 rounded px-1.5 text-[10px] text-[var(--geist-gray-700)] hover:bg-[var(--geist-gray-alpha-100)] hover:text-[var(--geist-gray-900)] disabled:opacity-0"
+          title={`Move to ${nextStatus}`}
+        >
+          <ChevronRight size={10} />
+        </button>
+        <div
+          className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[var(--geist-gray-alpha-200)] text-[9px] font-bold uppercase text-[var(--geist-gray-900)]"
+          title={ticket.owner}
+        >
+          {ownerInitial}
+        </div>
+      </div>
+    </article>
   )
 }
 
@@ -843,6 +1078,8 @@ function AgentPanel({
   generateSpec,
   generateTickets,
   working,
+  open,
+  onToggle,
 }: {
   events: AgentEvent[]
   input: string
@@ -851,19 +1088,58 @@ function AgentPanel({
   generateSpec: () => void
   generateTickets: () => void
   working: boolean
+  open: boolean
+  onToggle: () => void
 }) {
+  if (!open) {
+    return (
+      <aside className="flex w-10 shrink-0 flex-col items-center border-l border-[var(--geist-gray-alpha-200)] bg-[var(--geist-background-200)] py-3 max-[1100px]:hidden">
+        <button
+          onClick={onToggle}
+          className="rounded-[var(--geist-radius-sm)] p-1.5 text-[var(--geist-gray-800)] hover:bg-[var(--geist-gray-alpha-100)] hover:text-[var(--geist-primary)]"
+          aria-label="Expand Agent Log"
+        >
+          <PanelRight size={15} />
+        </button>
+        <div className="mt-4 flex flex-1 items-center justify-center">
+          <span
+            className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[var(--geist-gray-700)]"
+            style={{ writingMode: "vertical-rl", transform: "rotate(180deg)" }}
+          >
+            Agent Log
+          </span>
+        </div>
+      </aside>
+    )
+  }
+
   return (
     <aside className="flex min-h-0 flex-col border-l border-[var(--geist-gray-alpha-200)] bg-[var(--geist-background-200)] max-[1100px]:hidden">
-      <div className="flex h-12 items-center gap-2 border-b border-[var(--geist-gray-alpha-200)] px-4">
+      <div className="flex h-12 shrink-0 items-center gap-2 border-b border-[var(--geist-gray-alpha-200)] px-4">
         <Bot size={16} className="text-[var(--geist-blue-700)]" />
-        <div className="text-sm font-semibold">Agent Log</div>
+        <div className="flex-1 text-sm font-semibold">Agent Log</div>
+        <button
+          onClick={onToggle}
+          className="rounded-[var(--geist-radius-sm)] p-1 text-[var(--geist-gray-800)] hover:bg-[var(--geist-gray-alpha-100)] hover:text-[var(--geist-primary)]"
+          aria-label="Collapse Agent Log"
+        >
+          <PanelRight size={15} />
+        </button>
       </div>
       <div className="grid gap-2 border-b border-[var(--geist-gray-alpha-200)] p-3">
-        <button onClick={generateSpec} disabled={working} className="flex h-9 items-center justify-center gap-2 rounded-[var(--geist-radius-sm)] bg-[var(--geist-primary)] px-3 text-sm font-medium text-[var(--geist-background-100)] disabled:opacity-60">
+        <button
+          onClick={generateSpec}
+          disabled={working}
+          className="flex h-9 items-center justify-center gap-2 rounded-[var(--geist-radius-sm)] bg-[var(--geist-primary)] px-3 text-sm font-medium text-[var(--geist-background-100)] disabled:opacity-60"
+        >
           <FileText size={15} />
           Generate FS
         </button>
-        <button onClick={generateTickets} disabled={working} className="flex h-9 items-center justify-center gap-2 rounded-[var(--geist-radius-sm)] border border-[var(--geist-gray-alpha-300)] bg-[var(--geist-background-100)] px-3 text-sm font-medium disabled:opacity-60">
+        <button
+          onClick={generateTickets}
+          disabled={working}
+          className="flex h-9 items-center justify-center gap-2 rounded-[var(--geist-radius-sm)] border border-[var(--geist-gray-alpha-300)] bg-[var(--geist-background-100)] px-3 text-sm font-medium disabled:opacity-60"
+        >
           <Ticket size={15} />
           Create Tickets
         </button>
@@ -871,8 +1147,13 @@ function AgentPanel({
       <div className="min-h-0 flex-1 overflow-y-auto p-3">
         <div className="flex flex-col gap-2">
           {events.map((item) => (
-            <div key={item.id} className="rounded-[var(--geist-radius-md)] border border-[var(--geist-gray-alpha-200)] bg-[var(--geist-background-100)] p-3 text-sm leading-6">
-              <div className="mb-1 text-xs font-medium text-[var(--geist-gray-700)]">{item.actor === "agent" ? "Agent" : "You"}</div>
+            <div
+              key={item.id}
+              className="rounded-[var(--geist-radius-md)] border border-[var(--geist-gray-alpha-200)] bg-[var(--geist-background-100)] p-3 text-sm leading-6"
+            >
+              <div className="mb-1 text-xs font-medium text-[var(--geist-gray-700)]">
+                {item.actor === "agent" ? "Agent" : "You"}
+              </div>
               {item.text}
             </div>
           ))}
@@ -893,7 +1174,11 @@ function AgentPanel({
             className="min-w-0 flex-1 resize-none bg-transparent text-sm leading-5 outline-none placeholder:text-[var(--geist-gray-700)]"
             placeholder="Add context for agents..."
           />
-          <button onClick={send} className="mt-auto flex h-8 w-8 items-center justify-center rounded-full bg-[var(--geist-primary)] text-[var(--geist-background-100)]" aria-label="Send Agent Message">
+          <button
+            onClick={send}
+            className="mt-auto flex h-8 w-8 items-center justify-center rounded-full bg-[var(--geist-primary)] text-[var(--geist-background-100)]"
+            aria-label="Send Agent Message"
+          >
             <Send size={14} />
           </button>
         </div>
@@ -902,14 +1187,30 @@ function AgentPanel({
   )
 }
 
-function EmptyState({ title, text, action, onAction, disabled }: { title: string; text: string; action?: string; onAction?: () => void; disabled?: boolean }) {
+function EmptyState({
+  title,
+  text,
+  action,
+  onAction,
+  disabled,
+}: {
+  title: string
+  text: string
+  action?: string
+  onAction?: () => void
+  disabled?: boolean
+}) {
   return (
     <div className="flex h-full items-center justify-center p-6">
       <div className="max-w-md rounded-[var(--geist-radius-md)] border border-[var(--geist-gray-alpha-200)] bg-[var(--geist-background-200)] p-5 text-center">
         <h1 className="text-lg font-semibold">{title}</h1>
         <p className="mt-2 text-sm leading-6 text-[var(--geist-gray-800)]">{text}</p>
         {action && (
-          <button onClick={onAction} disabled={disabled} className="mt-4 inline-flex h-9 items-center gap-2 rounded-[var(--geist-radius-sm)] bg-[var(--geist-primary)] px-3 text-sm font-medium text-[var(--geist-background-100)] disabled:opacity-60">
+          <button
+            onClick={onAction}
+            disabled={disabled}
+            className="mt-4 inline-flex h-9 items-center gap-2 rounded-[var(--geist-radius-sm)] bg-[var(--geist-primary)] px-3 text-sm font-medium text-[var(--geist-background-100)] disabled:opacity-60"
+          >
             <Plus size={15} />
             {action}
           </button>
